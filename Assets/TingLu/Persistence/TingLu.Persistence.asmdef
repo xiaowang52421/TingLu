@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.Persistence",
+  "rootNamespace": "TingLu.Persistence",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

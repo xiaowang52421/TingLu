@@ -1,0 +1,234 @@
+{
+  "runId": "20261014-113333-248-12176d17",
+  "startedLocal": "20261014-113333-248",
+  "command": "pwsh -NoProfile -File Tests/Integration/Acceptance/Run-Acceptance.ps1",
+  "compiler": "PowerShell Add-Type (C#), no Unity or NUnit references",
+  "sourceFilter": "Recursively read candidate .cs files under Assets/TingLu and Tests/Integration/Acceptance; exclude each file whose contents reference UnityEngine or NUnit.Framework.",
+  "compileSeconds": 1.042,
+  "includedSources": [
+    "Assets\\TingLu\\Audio\\AcousticModel.cs",
+    "Assets\\TingLu\\Audio\\SpeechPriorityQueue.cs",
+    "Assets\\TingLu\\Bootstrap\\Core\\Coordinates.cs",
+    "Assets\\TingLu\\Bootstrap\\Core\\EventBus.cs",
+    "Assets\\TingLu\\Bootstrap\\Core\\SimulationClock.cs",
+    "Assets\\TingLu\\Bootstrap\\Integration\\DemoSession.cs",
+    "Assets\\TingLu\\Config\\Shared\\GameplayConfig.cs",
+    "Assets\\TingLu\\Contracts\\Events.cs",
+    "Assets\\TingLu\\Contracts\\Model.cs",
+    "Assets\\TingLu\\Contracts\\Services.cs",
+    "Assets\\TingLu\\Diagnostics\\AcceptanceReport.cs",
+    "Assets\\TingLu\\Input\\UnifiedInputSource.cs",
+    "Assets\\TingLu\\Levels\\FirstStepFlow.cs",
+    "Assets\\TingLu\\Levels\\FirstStepLevel.cs",
+    "Assets\\TingLu\\Levels\\FirstStepProgression.cs",
+    "Assets\\TingLu\\Levels\\FirstStepTemplate.cs",
+    "Assets\\TingLu\\Levels\\FirstStepWorldFactory.cs",
+    "Assets\\TingLu\\Levels\\LevelCompiler.cs",
+    "Assets\\TingLu\\Levels\\LevelDocument.cs",
+    "Assets\\TingLu\\Levels\\LevelValidator.cs",
+    "Assets\\TingLu\\Levels\\MovementRoutes.cs",
+    "Assets\\TingLu\\Memory\\StaticMemoryStore.cs",
+    "Assets\\TingLu\\Perception\\Geometry2.cs",
+    "Assets\\TingLu\\Perception\\PerceptionService.cs",
+    "Assets\\TingLu\\Persistence\\LocalSaveService.cs",
+    "Assets\\TingLu\\Player\\PlayerController.cs",
+    "Assets\\TingLu\\Player\\ThreatReceiptGate.cs",
+    "Assets\\TingLu\\Presentation\\PresentationFrameComposer.cs",
+    "Assets\\TingLu\\Tests\\EditMode\\PerceptionMemory\\PerceptionPresentationPureChecks.cs",
+    "Assets\\TingLu\\UI\\AccessibleMenu.cs",
+    "Assets\\TingLu\\World\\WorldRegistry.cs",
+    "Tests\\Integration\\Acceptance\\AcceptanceChecks.cs"
+  ],
+  "excludedSources": [
+    {
+      "path": "Assets\\TingLu\\Audio\\UnityAudioPlayback.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Bootstrap\\Editor\\CreateBootstrap.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Bootstrap\\Editor\\CreateDemoScene.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Bootstrap\\Runtime\\BootstrapStatus.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Bootstrap\\Runtime\\DemoEntry.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Diagnostics\\Editor\\WindowsDemoBuild.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Diagnostics\\PlayerStartupProbe.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Levels\\Editor\\EditorProjectPaths.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Levels\\Editor\\LevelEditBuffer.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Levels\\Editor\\LevelEditorWindow.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Levels\\Editor\\LevelPreviewHost.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Presentation\\VoiceRenderer.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\EditMode\\Bootstrap\\SessionLifecycleTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\EditMode\\LevelEditor\\LevelEditorUnityTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\EditMode\\PerceptionMemory\\PerceptionMemoryRulesTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\EditMode\\Presentation\\PresentationRulesTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\PlayMode\\AudioLifecycleTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\Tests\\PlayMode\\DemoSceneSmokeTests.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    },
+    {
+      "path": "Assets\\TingLu\\UI\\AccessibleMenuPanel.cs",
+      "reason": "source references UnityEngine or NUnit.Framework"
+    }
+  ],
+  "results": [
+    {
+      "Id": "T01_silent_and_tactile",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T02_sound_location_and_occlusion",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T03_local_memory_coverage",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T04_same_id_fragments",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T05_dynamic_not_remembered",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T06_tap_cooldown_and_confusion",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T07_listening_focus_collision_restore",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T08_contact_dedup_and_reentry",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T09_threat_receipt_gate",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T11_menu_callbacks_generation",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T12_resume_roundtrip_rewards",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T13_corrupt_backup_future_protection",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T14_star_boundaries",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T15_hidden_world_equivalence",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T15_tiny_occluder_coverage",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T15_blind_path_requires_underfoot_material",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T16_sound_beats_require_perception",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T17_failure_recovery_preserves_attempt",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T18_first_level_continuous_tactile_path",
+      "Status": "PASS",
+      "Detail": "断言满足"
+    },
+    {
+      "Id": "T12_collection_requires_perceived_source",
+      "Status": "PASS",
+      "Detail": "只在碎片声源已感知且进入近处时收集，奖励ID为l1-1/fragment/01"
+    }
+  ],
+  "totals": {
+    "pass": 20,
+    "fail": 0,
+    "notRun": 0
+  },
+  "manualVerification": {
+    "unityImportOrPlayMode": "NOT RUN",
+    "audioHardwareOrHumanListening": "NOT RUN",
+    "realBlindPlayerOrAccessibilityStudy": "NOT RUN",
+    "crossModuleDemoSession": "COMPILED IN THE PURE C# SOURCE SET; Unity scene and PlayMode behavior NOT RUN"
+  },
+  "saveWorkspace": "D:\\听路\\tmp\\acceptance-runs\\20261014-113333-248-12176d17"
+}

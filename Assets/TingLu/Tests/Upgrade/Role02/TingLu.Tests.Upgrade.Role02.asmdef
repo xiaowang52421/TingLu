@@ -1,0 +1,16 @@
+{
+  "name": "TingLu.Tests.Upgrade.Role02",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Tests.Upgrade.Shared",
+    "TingLu.Player",
+    "TingLu.World"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

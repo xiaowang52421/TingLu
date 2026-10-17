@@ -1,0 +1,28 @@
+{
+  "stage": "EditMode",
+  "status": "PASS",
+  "unityPath": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+  "log": "D:\\听路_街区升级\\output\\level-editor-unity-verification\\20261016-042628-aeeeee57\\unity.log",
+  "reason": null,
+  "deviceAudio": "NOT_RUN",
+  "humanAudioOnlyPlaythrough": "NOT_RUN",
+  "verifierSha256": "85DD6B12326D48D6B1DF94A497F07749611900C46F073010C438CD2DA549E904",
+  "projectUnityVersion": "2022.3.62f1c1",
+  "sourceFingerprint": "B5A764808328B88540968B8D6F3C2307941AB8E6BC108901964D87A7AF7D2593",
+  "sourceManifest": "C:\\Users\\xiaowang5242\\AppData\\Local\\Temp\\听路 关卡编辑器迁移验证 3bc3e801f5f747ec965dccf84ed23258\\output\\unity-verification\\20261016-042628-aeeeee57\\source-manifest.json",
+  "testResults": "D:\\听路_街区升级\\output\\level-editor-unity-verification\\20261016-042628-aeeeee57\\editmode.xml",
+  "exitCode": 0,
+  "tests": {
+    "total": 189,
+    "passed": 189,
+    "failed": 0,
+    "skipped": 0,
+    "inconclusive": 0
+  },
+  "sourceUnchangedDuringStage": true,
+  "sandboxlog": "C:\\Users\\xiaowang5242\\AppData\\Local\\Temp\\听路 关卡编辑器迁移验证 3bc3e801f5f747ec965dccf84ed23258\\output\\unity-verification\\20261016-042628-aeeeee57\\unity.log",
+  "sandboxtestResults": "C:\\Users\\xiaowang5242\\AppData\\Local\\Temp\\听路 关卡编辑器迁移验证 3bc3e801f5f747ec965dccf84ed23258\\output\\unity-verification\\20261016-042628-aeeeee57\\editmode.xml",
+  "relocatedProject": "C:\\Users\\xiaowang5242\\AppData\\Local\\Temp\\听路 关卡编辑器迁移验证 3bc3e801f5f747ec965dccf84ed23258",
+  "sourceSnapshot": "D:\\听路_街区升级\\output\\level-editor-source-20261016-042624.zip",
+  "scope": "Actual Unity EditMode APIs in a relocated project with Chinese characters and spaces; manual mouse/keyboard GUI and device audio not verified."
+}

@@ -1,0 +1,9 @@
+{
+  "name": "TingLu.Player",
+  "rootNamespace": "TingLu.Player",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ],
+  "noEngineReferences": true
+}

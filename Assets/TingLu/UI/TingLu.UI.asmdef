@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.UI",
+  "rootNamespace": "TingLu.UI",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

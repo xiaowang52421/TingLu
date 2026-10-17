@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.Audio",
+  "rootNamespace": "TingLu.Audio",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

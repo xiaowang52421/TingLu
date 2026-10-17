@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-10-15T19:36:13.865114+00:00",
+  "scope": "Full packaged build payload hashes after visible moved-directory Player run",
+  "checkedFiles": 235,
+  "unchanged": true,
+  "mismatches": [],
+  "playerResults": "output/street-verification/20261016-032724-5d2663cb/results.json"
+}

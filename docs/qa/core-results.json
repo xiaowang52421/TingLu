@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "scope": "Pure C# contracts and bootstrap core only",
+  "runtime": "7.6.5",
+  "passed": [
+    "C01 Pause freezes simulation and invalid delta rejected",
+    "C11 Timeline restore requires pause and preserves checkpoint phase",
+    "C02 Geometry and memory copies do not alias mutable input",
+    "C03 Passive location cannot upgrade to remembered geometry",
+    "C04 Dynamic contact cannot create permanent memory",
+    "C05 Reentrant FIFO and idempotent subscription cleanup",
+    "C06 Consumer failure delivered to remaining subscribers and reported",
+    "C07 Semantic payload mismatch rejected and global position nullable",
+    "C08 Four-facing direction and XY audio plane mapping",
+    "C09 Progress ownership and collection deduplication",
+    "C10 Invalid configuration and non-normalized facing rejected"
+  ],
+  "unity": "NOT_RUN",
+  "devices": "NOT_RUN"
+}

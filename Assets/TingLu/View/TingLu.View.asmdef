@@ -1,0 +1,7 @@
+{
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ],
+  "name": "TingLu.View"
+}

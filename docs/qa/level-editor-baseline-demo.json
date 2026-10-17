@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "scope": "Pure C# production DemoSession with recording audio test backend and real LocalSaveService IO",
+  "runtime": "7.6.5",
+  "passed": [
+    "D01 Main menu starts assembled session and routes feedback",
+    "D02 Movement and cane actions pass through event/audio assembly",
+    "D03 Pause and resume freeze and restart the same simulation",
+    "D04 Failure restores checkpoint and keeps attempt collision count on disk",
+    "D05 Return to menu and Continue restore persisted attempt",
+    "D06 Session disposal releases its audio backend",
+    "D07 Input-driven first-level route collects fragment, finishes and persists three stars",
+    "D08 Three modes share menu/goal flow; AudioOnly has no presentation frame",
+    "D09 Invalid resume freezes safely and permits starting a fresh run"
+  ],
+  "evidenceDirectory": "D:\\听路\\tmp\\demo-runs\\3d0f066925c64ece97658fe2355dfd39",
+  "unity": "NOT_RUN",
+  "audioDevice": "NOT_RUN",
+  "speechProvider": "NOT_RUN",
+  "humanAudioOnlyPlaythrough": "NOT_RUN"
+}

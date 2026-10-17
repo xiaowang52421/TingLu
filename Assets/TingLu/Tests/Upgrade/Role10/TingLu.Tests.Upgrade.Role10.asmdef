@@ -1,0 +1,19 @@
+{
+  "name": "TingLu.Tests.Upgrade.Role10",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Levels",
+    "TingLu.Memory",
+    "TingLu.Perception",
+    "TingLu.Tests.Upgrade.Shared",
+    "TingLu.World",
+    "TingLu.Persistence"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

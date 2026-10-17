@@ -1,0 +1,15 @@
+{
+  "name": "TingLu.Tests.Upgrade.Role06",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Tests.Upgrade.Shared",
+    "TingLu.Audio"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

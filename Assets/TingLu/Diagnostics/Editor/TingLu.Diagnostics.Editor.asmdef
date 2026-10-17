@@ -1,0 +1,6 @@
+{
+  "name": "TingLu.Diagnostics.Editor",
+  "rootNamespace": "TingLu.Diagnostics.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"]
+}

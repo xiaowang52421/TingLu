@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.Narrative",
+  "rootNamespace": "TingLu.Narrative",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

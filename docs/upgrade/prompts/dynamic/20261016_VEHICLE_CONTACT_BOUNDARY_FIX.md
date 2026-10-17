@@ -1,0 +1,7 @@
+# 00授权：车辆首次接触边界修复
+
+stationary_vehicle_review在前项只读定位基础上，现可独占World/StreetWorld.cs、Role03/StreetWorldTests.cs、自己的诊断QA/输出。请求gpt-6-luna/xhigh；不启动Unity，不改Player/Session/Integration/地图。audit_runtime继续仅Integration。
+
+重点验证首帧浮点边界：CircleOverlapsPolygon用radius+DistanceEpsilon判endoverlap，SweepCirclePolygon可能未得到hit，但activeVehicleContacts无条件记录overlap，下一帧真实hit被当作重复抑制，导致整个穿过不通知。需要统一终点重叠与扫掠的首次接触语义：终点真实有效重叠应有contact；或避免尚未通知的接触进入已处理集合。不能取消去重、加大到可见碰撞范围、改测试停点或禁车。
+
+请确认根因后作最小修复，添加边界初触→深入→离开→重入回归，涵盖同tick多次查询无重复、paused/reset既有语义。保留真实完整地图复现。测试仍NOT_RUN直到00统一Unity。尽快冻结报告。

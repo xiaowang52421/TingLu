@@ -1,0 +1,22 @@
+{
+  "name": "TingLu.Bootstrap",
+  "rootNamespace": "TingLu.Bootstrap",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Bootstrap.Core",
+    "TingLu.Bootstrap.Integration",
+    "TingLu.Audio",
+    "TingLu.Persistence",
+    "TingLu.Presentation",
+    "TingLu.UI",
+    "TingLu.Player",
+    "TingLu.Perception",
+    "TingLu.Memory",
+    "TingLu.World",
+    "Unity.InputSystem",
+    "TingLu.Levels",
+    "TingLu.Input",
+    "TingLu.View"
+  ]
+}

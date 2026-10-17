@@ -1,0 +1,6 @@
+{
+  "name": "TingLu.LevelEditor.Editor",
+  "rootNamespace": "TingLu.Levels.Editor",
+  "references": ["TingLu.Levels", "TingLu.Contracts", "TingLu.Bootstrap"],
+  "includePlatforms": ["Editor"]
+}

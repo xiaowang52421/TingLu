@@ -1,0 +1,9 @@
+{
+  "name": "TingLu.Perception",
+  "rootNamespace": "TingLu.Perception",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ],
+  "noEngineReferences": true
+}

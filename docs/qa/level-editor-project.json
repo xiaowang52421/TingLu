@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "assets": 117,
+  "uniqueGuids": 117,
+  "assemblies": 23,
+  "checks": [
+    "Every asset and directory has meta",
+    "All GUIDs valid and unique",
+    "Assembly names and references valid and acyclic",
+    "Scene and material GUID references resolve",
+    "IMGUI dependency declared"
+  ],
+  "unityImport": "NOT_RUN"
+}

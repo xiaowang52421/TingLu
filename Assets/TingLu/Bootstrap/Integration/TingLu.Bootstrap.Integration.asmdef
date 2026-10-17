@@ -1,0 +1,19 @@
+{
+  "name": "TingLu.Bootstrap.Integration",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Bootstrap.Core",
+    "TingLu.World",
+    "TingLu.Player",
+    "TingLu.Memory",
+    "TingLu.Perception",
+    "TingLu.Audio",
+    "TingLu.Levels",
+    "TingLu.Persistence",
+    "TingLu.UI",
+    "TingLu.Input",
+    "TingLu.View",
+    "TingLu.Presentation"
+  ]
+}

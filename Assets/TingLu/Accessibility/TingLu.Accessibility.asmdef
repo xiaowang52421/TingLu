@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.Accessibility",
+  "rootNamespace": "TingLu.Accessibility",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

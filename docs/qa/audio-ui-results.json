@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "scope": "Pure C# accessibility menu state and shared acoustic/speech data, plus Unity audio backend source lifecycle audit",
+  "runtime": "7.6.5",
+  "passed": [
+    "main_menu_and_spoken_focus",
+    "pause_retry_results_goal",
+    "settings_and_return",
+    "acoustic_gain_and_metadata",
+    "speech_priority_and_supersession",
+    "audio_backend_source_lifecycle_audit",
+    "speech_renderer_no_unity_wav_probe"
+  ],
+  "unity": "NOT_RUN",
+  "audioDevice": "NOT_RUN",
+  "speechProvider": "WAV_SYNTHESIS_ONLY",
+  "speechEvidence": "valid PCM WAV; rate=22050; channels=1; frames=70306; bytes=140656"
+}

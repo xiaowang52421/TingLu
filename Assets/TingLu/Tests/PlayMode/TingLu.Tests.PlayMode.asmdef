@@ -1,0 +1,5 @@
+{
+  "name": "TingLu.Tests.PlayMode",
+  "references": ["TingLu.Contracts", "TingLu.Config", "TingLu.Bootstrap.Core", "TingLu.Bootstrap.Integration", "TingLu.Bootstrap", "TingLu.World", "TingLu.Player", "TingLu.Levels", "TingLu.Memory", "TingLu.Perception", "TingLu.Presentation", "TingLu.Audio", "TingLu.UI", "TingLu.Persistence"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

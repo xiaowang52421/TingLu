@@ -1,0 +1,11 @@
+{
+  "name": "TingLu.Tests.Upgrade.Shared",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.World"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

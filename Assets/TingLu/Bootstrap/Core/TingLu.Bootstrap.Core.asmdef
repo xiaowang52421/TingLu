@@ -1,0 +1,6 @@
+{
+  "name": "TingLu.Bootstrap.Core",
+  "rootNamespace": "TingLu.Bootstrap",
+  "references": ["TingLu.Contracts"],
+  "noEngineReferences": true
+}

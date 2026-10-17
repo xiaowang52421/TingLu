@@ -1,0 +1,9 @@
+{
+  "name": "TingLu.Memory",
+  "rootNamespace": "TingLu.Memory",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ],
+  "noEngineReferences": true
+}

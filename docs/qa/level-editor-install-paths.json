@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "customDirectory": "C:\\Users\\xiaowang5242\\AppData\\Local\\Temp\\听路 自定义安装 c5d9965d942f4cc787496f912bf1a7d0\\改名目录\\Editor\\Unity.exe",
+  "binaryProductVersion": "2022.3.62f1c1_b0109b07edb8",
+  "renamedInstallation": true,
+  "chinaSuffixEquivalent": true,
+  "wrongVersionRejected": true,
+  "environmentCandidate": true,
+  "discoveredInstallation": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+  "actualUnityLaunch": "NOT_RUN for copied executable; metadata check only"
+}

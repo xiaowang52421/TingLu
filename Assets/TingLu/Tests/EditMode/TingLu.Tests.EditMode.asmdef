@@ -1,0 +1,6 @@
+{
+  "name": "TingLu.Tests.EditMode",
+  "references": ["TingLu.Contracts", "TingLu.Config", "TingLu.Bootstrap.Core", "TingLu.Bootstrap.Integration", "TingLu.World", "TingLu.Player", "TingLu.Levels", "TingLu.Memory", "TingLu.Perception", "TingLu.Presentation", "TingLu.Audio", "TingLu.UI", "TingLu.Persistence"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

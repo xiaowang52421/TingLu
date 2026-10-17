@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "scope": "Pure C# JSON storage/validation/copy and real DemoSession assembly with recording audio backend",
+  "runtime": "7.6.5",
+  "passed": [
+    "L01 First-step safe template, independent copy reference remap, safe JSON save/reload and stable IDs",
+    "L02 Invalid IDs, references, facing, unsafe spawn, zero guides, expansion overflow and illegal disclosure reject",
+    "L03 Future version preserved; incomplete draft safely saves but cannot play",
+    "L07 Corrupt GUI inputs reject before drawing; custom no-sound checkpoint stays silent",
+    "L04 Reloaded independent data enters real DemoSession: spawn, heading, obstacles, tactile path, lawful dialogue, selected sounds, checkpoint, fragment and goal",
+    "L05 Preview settings/progress/resume IO including return/dispose stays in isolated directory",
+    "L06 Relative triggers follow moved parent and single-object copy remaps self references"
+  ],
+  "csharpSyntaxParse": "PASS syntax only, not Unity compilation",
+  "evidenceDirectory": "D:\\听路\\tmp\\level-editor-runs\\4b034b976b2c410db83d65e7b33aa36f",
+  "unityCompile": "NOT_RUN",
+  "editorWindow": "NOT_RUN",
+  "dragDrop": "NOT_RUN",
+  "undoGUI": "NOT_RUN",
+  "previewScene": "NOT_RUN",
+  "audioDevice": "NOT_RUN",
+  "humanAudioOnly": "NOT_RUN"
+}

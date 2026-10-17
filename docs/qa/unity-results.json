@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-14",
+  "state": "CONFIGURED_PLAYER_AND_EDITOR_VERIFIED",
+  "priorEditMode": "output/unity-verification/20261014-025301-98463868/results.json",
+  "priorPlayMode": "output/unity-verification/20261014-024933-51b0dda6/results.json",
+  "priorBuild": "output/unity-verification/20261014-024634-18e91197/results.json",
+  "priorPlayer": "output/player-verification/20261014-024944-d2cf6735/results.json",
+  "speech": "VERIFIED_STARTED_SUCCESS: Windows PowerShell System.Speech in configured build and relocated Player",
+  "pureChecks": {
+    "levelEditor": 9,
+    "perception": 10,
+    "demo": 11,
+    "portability": 6,
+    "acceptance": 20,
+    "core": 11,
+    "audioUi": 7
+  },
+  "recovery": "Levels recovered from source baseline and original successful patches; dangerous migration test replaced by isolated-copy relocation",
+  "failedFinalAttempts": [
+    "output/unity-verification/20261014-113641-9926d057/results.json",
+    "output/unity-verification/20261014-113748-2317eaf0/results.json"
+  ],
+  "deviceListening": "NOT_RUN",
+  "humanAudioOnlyPlaythrough": "NOT_RUN",
+  "build": "output/unity-verification/20261014-115550-03987604/results.json",
+  "playerRelocation": "output/player-verification/20261014-115755-a5cdf0b5/results.json",
+  "playMode": "output/unity-verification/20261014-115511-b63d63d9/results.json",
+  "player": "output/player-verification/20261014-115711-f159655d/results.json",
+  "delivery": "output/听路试玩_2026-10-14_配置版/TingLu.exe",
+  "unityTests": {
+    "editMode": 20,
+    "playMode": 3
+  },
+  "editorManualInteraction": "NOT_RUN",
+  "editMode": "docs/qa/level-editor-unity-results.json",
+  "editModeArchived": "output/editor-verification/20261014-120454-final/relocated-results.json",
+  "finalSourceSnapshot": "output/level-editor-source-20261014-120451.zip",
+  "visibleProbeAttempt": "output/player-verification/20261014-115637-0af33f55/results.json"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "TingLu.World",
+  "rootNamespace": "TingLu.World",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ],
+  "noEngineReferences": true
+}

@@ -1,0 +1,5 @@
+# PACKAGE_STREET_PLAYER 完整任务提示词
+
+共同规则：用户已授权在当前升级副本继续完成。执行配置gpt-6-luna/xhigh，fork_turns=none；实际provider未由工具独立返回。StreetContract1.0.0。完整读项目升级文档入口、docs/upgrade/01至04、IMPLEMENTATION_CONTRACT和下述对应角色完整提示词。只写D:\听路_街区升级；原D:\听路/原存档/旧试玩只读。不升级引擎/包/SDK/系统设置，不启动Unity或构建，不再派子Agent，不创建其他聊天。共享契约/asmdef/Bootstrap/Config归总控，不越界修生产或他人测试。保持确定性和信息许可边界；自动化、实际画面、软件播放Started、真人听辨分别记录，不能冒充整项通过。需要跨目录修复时精确报告交总控。交接含status/model请求及核实限制/contract_version/completed/changed_files/tests与证据/limitations/next_dependencies，READY后停写。
+
+父职责00交付工具分任务。读README、docs/upgrade/RESUME/状态和现有tools/upgrade/Verify-StreetPlayer.ps1。唯一可写工具tools/upgrade/Package-StreetPlayer.ps1、交接docs/handoffs/UPGRADE_PACKAGE_STREET_PLAYER.md，其余只读。编写可复现完整Windows目录打包脚本：接受参数SourceBuildDirectory、DestinationDirectory，要求目标在当前项目output内且不存在；验证TingLu.exe/TingLu_Data/UnityPlayer.dll/UnityCrashHandler64.exe/MonoBleedingEdge等实际完整内容（按当前真实构建清单判断，不强制不存在组件），复制整个目录并SHA256逐文件对比，生成manifest和自然中文开始体验.txt。说明WASD移动/鼠标转身/右键/被动听觉/Esc/G、未知黑色需敲杖、菜单方向/回车/返回、独立新存档、环境音占位与真人听辨未验；不要用开发者内部术语污染体验流程。不得覆盖旧目标或删文件/改原包，禁止reparse点，路径须正规化校验。PowerShell7可用。现在仅交脚本并做语法/临时自建fixture验证，真实新构建待总控提供再运行，不先包装旧22:10构建冒充新版本。最终由总控执行和核对。

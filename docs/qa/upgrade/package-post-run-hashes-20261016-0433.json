@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-15T20:31:32.6156498Z",
+  "scope": "Full packaged build payload hashes after two visible Player runs",
+  "checkedFiles": 235,
+  "unchanged": true,
+  "mismatches": [],
+  "playerResults": [
+    "output/street-verification/20261016-042922-7f5de651/results.json",
+    "output/street-verification/20261016-042932-2fccbbcc/results.json"
+  ],
+  "packageManifest": "output/听路试玩_2026-10-16_街区升级重验版/package-manifest.json"
+}

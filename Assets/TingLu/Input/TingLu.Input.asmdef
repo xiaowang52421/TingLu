@@ -1,0 +1,9 @@
+{
+  "name": "TingLu.Input",
+  "rootNamespace": "TingLu.Input",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "Unity.InputSystem"
+  ]
+}

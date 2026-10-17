@@ -1,0 +1,7 @@
+{
+  "name": "TingLu.LevelEditor.Tests.EditMode",
+  "rootNamespace": "TingLu.Tests.LevelEditor",
+  "references": ["TingLu.LevelEditor.Editor", "TingLu.Levels", "TingLu.Contracts", "TingLu.Bootstrap", "TingLu.Bootstrap.Integration", "TingLu.Player"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

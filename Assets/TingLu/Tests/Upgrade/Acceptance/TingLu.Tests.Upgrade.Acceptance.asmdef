@@ -1,0 +1,25 @@
+{
+  "name": "TingLu.Tests.Upgrade.Acceptance",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Tests.Upgrade.Shared",
+    "TingLu.Bootstrap",
+    "TingLu.Bootstrap.Integration",
+    "TingLu.Bootstrap.Core",
+    "TingLu.Input",
+    "TingLu.View",
+    "TingLu.Presentation",
+    "TingLu.World",
+    "TingLu.Player",
+    "TingLu.Perception",
+    "TingLu.Memory",
+    "TingLu.Audio",
+    "TingLu.Persistence",
+    "TingLu.Levels",
+    "TingLu.UI"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

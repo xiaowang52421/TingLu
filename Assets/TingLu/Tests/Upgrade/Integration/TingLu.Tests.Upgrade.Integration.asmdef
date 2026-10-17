@@ -1,0 +1,27 @@
+{
+  "name": "TingLu.Tests.Upgrade.Integration",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config",
+    "TingLu.Tests.Upgrade.Shared",
+    "TingLu.Bootstrap.Integration",
+    "TingLu.Bootstrap.Core",
+    "TingLu.World",
+    "TingLu.Player",
+    "TingLu.Perception",
+    "TingLu.Memory",
+    "TingLu.Audio",
+    "TingLu.Persistence",
+    "TingLu.Levels",
+    "TingLu.UI",
+    "TingLu.Input",
+    "TingLu.View",
+    "TingLu.Presentation"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

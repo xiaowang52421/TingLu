@@ -1,0 +1,5 @@
+{
+  "name": "TingLu.Bootstrap.Editor",
+  "references": ["TingLu.Bootstrap"],
+  "includePlatforms": ["Editor"]
+}

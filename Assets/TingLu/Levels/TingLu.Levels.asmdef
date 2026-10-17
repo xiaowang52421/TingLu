@@ -1,0 +1,8 @@
+{
+  "name": "TingLu.Levels",
+  "rootNamespace": "TingLu.Levels",
+  "references": [
+    "TingLu.Contracts",
+    "TingLu.Config"
+  ]
+}

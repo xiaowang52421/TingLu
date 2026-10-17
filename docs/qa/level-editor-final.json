@@ -1,0 +1,36 @@
+{
+  "status": "UNITY_API_VALIDATED",
+  "date": "2026-10-14",
+  "entry": "TingLu/关卡编辑器",
+  "pureCSharp": {
+    "passedGroups": 9,
+    "report": "docs/qa/level-editor-path-regression.json",
+    "status": "PASS"
+  },
+  "unity": {
+    "report": "docs/qa/level-editor-unity-results.json",
+    "sourceSnapshot": "D:\\听路\\output\\level-editor-source-20261014-120451.zip",
+    "log": "D:\\听路\\output\\level-editor-unity-verification\\20261014-120454-75b2348f\\unity.log",
+    "status": "PASS",
+    "total": 20,
+    "skipped": 0,
+    "testResults": "D:\\听路\\output\\level-editor-unity-verification\\20261014-120454-75b2348f\\editmode.xml",
+    "exitCode": 0,
+    "editorSpecific": 9,
+    "failed": 0,
+    "passed": 20,
+    "version": "2022.3.62f1c1"
+  },
+  "portability": {
+    "jsonSaveFollowsGuid": "PASS",
+    "moduleAndMaterialRelocation": "PASS in isolated copy",
+    "projectRelocation": "PASS Chinese/space C-drive directory, unrelated cwd",
+    "mockChecks": 6,
+    "installationMetadata": "docs/qa/level-editor-install-paths.json"
+  },
+  "manualGui": "NOT_RUN",
+  "editorDeviceAudio": "NOT_RUN",
+  "humanAudioOnly": "NOT_RUN",
+  "guide": "docs/LEVEL_EDITOR_GUIDE.md",
+  "manualChecklist": "docs/qa/LEVEL_EDITOR_ACCEPTANCE.md"
+}
