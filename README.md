@@ -4,7 +4,7 @@
 
 Git 仓库包含 Unity 工程源码、资源、项目配置、工具和交付文档。克隆后用 Unity **2022.3.62f1c1** 打开仓库根目录，等待依赖解析，再打开下方的 `StreetCrossroads.unity` 场景。`Library` 等缓存和 `output` 下的试玩包、验证输出、交接快照保留在开发机，不纳入 Git；文档中的 `output/...` 路径是本地证据路径，克隆后需通过验证/构建脚本重新生成。Git 属性保留文件原始字节，方便复核已验证源码指纹。
 
-2026-10-17 当前试玩：[听路街区交付复核版](output/听路试玩_2026-10-17_街区交付复核版/TingLu.exe)。请保留整个目录。当前源码通过 EditMode184/184、PlayMode2/2、Windows构建和1280×720/960×640可见Player。已完成灯态与坡道、重复探测碎片、真实音频池重试、短按输入及菜单裁字修复；235构建文件运行后哈希一致。实际设备出声、键鼠手感和真人无障碍仍单列验收，详见[本轮复核](docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md)。
+2026-10-17 当前试玩：[从 GitHub Release 下载 Windows 试玩包](https://github.com/xiaowang52421/TingLu/releases/tag/street-2026.10.17-preview.1)。也可直接下载 [Windows ZIP](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.zip) 和 [SHA-256 校验文件](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.sha256.txt)。完整解压后运行 `TingLu.exe`，无需安装 Unity；请保留整个目录。Release 页面自动生成的 Source code 压缩包是源码。当前源码通过 EditMode184/184、PlayMode2/2、Windows构建和1280×720/960×640可见Player。已完成灯态与坡道、重复探测碎片、真实音频池重试、短按输入及菜单裁字修复；235构建文件运行后哈希一致。本次标为 Pre-release，实际设备出声、键鼠手感和真人无障碍仍单列验收，详见[本轮复核](docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md)。
 
 新版首场景为 `Assets/TingLu/Scenes/Levels/StreetCrossroads.unity`。WASD 或方向键移动，鼠标水平移动转身，右键按下一次敲杖；聆听被动生效，Esc 暂停，G 重听目标。镜头方向固定；空格与 Shift 不再触发旧玩法。新版存档使用独立产品名与命名空间。
 
@@ -22,7 +22,7 @@ Player 画面检查需使用可见窗口；本机隐藏窗口可能得到纯黑�
 
 # 旧 M0 工程资料
 
-新版试玩入口：[output/听路试玩_2026-10-14_配置版/TingLu.exe](output/听路试玩_2026-10-14_配置版/TingLu.exe)，无需打开 Unity。保留整个试玩目录；操作说明在同目录 `开始体验.txt`。旧试玩包另行保留。
+历史 M0 试玩包仅在开发机另行保留，未上传此仓库；其原本地路径为 `output/听路试玩_2026-10-14_配置版/TingLu.exe`，不作为 GitHub 下载链接。当前公开试玩请使用上方的 Release。
 
 正式首关现在读取绑定的 `Assets/TingLu/Levels/Data/FirstStep.json`，人物路线按关卡配置运行；暂停冻结路线，续玩恢复其时间进度，旧首关存档保持兼容。程序已验证复制到另一盘的中文、空格目录并从不同工作目录启动。关卡资源通过 Unity 资产身份绑定，存档使用系统用户目录，开发工具自动发现指定版本的 Unity。
 
