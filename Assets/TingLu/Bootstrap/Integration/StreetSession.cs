@@ -87,8 +87,8 @@ namespace TingLu.Bootstrap
                     Finished=data.Finished;
                 }
                 Running=true;Clock.SetPaused(false);RefreshSenses();sessionFault=false;
-                if(Finished){Clock.SetPaused(true);Player.SetFinished();Menu.OpenResults("已经走到街对面了。");}
-                else{Menu.SetPlaying();Clock.SetPaused(false);playback.SetPaused(false);if(!resume)Menu.PresentKnownText("去街对面的巷口。WASD走路，移动鼠标转身，右键敲杖。路上的声音一直都能听见。","street-start",FeedbackPriority.Interface);}
+                if(Finished){Clock.SetPaused(true);Player.SetFinished();Menu.OpenResults(Level.Id==StreetLevelFactory.LevelId?"已经走到街对面了。":"已经走到终点了。");}
+                else{Menu.SetPlaying();Clock.SetPaused(false);playback.SetPaused(false);if(!resume)Menu.PresentKnownText(Level.GoalText+" WASD走路，移动鼠标转身，右键敲杖。路上的声音一直都能听见。","street-start",FeedbackPriority.Interface);}
                 Save();if(Recovered!=null)Recovered();
             }
             catch(Exception e){sessionFault=true;Clock.SetPaused(true);playback.SetPaused(true);Running=false;Menu.Back();Report("街区启动失败："+e.Message);}
@@ -125,7 +125,7 @@ namespace TingLu.Bootstrap
                     Menu.PresentKnownText("这里站稳了。","checkpoint",FeedbackPriority.Interface);if(CheckpointActivated!=null)CheckpointActivated(cp.Id);
                 }
             if(StreetGeometry.Distance(Player.Current.Position,Level.Goal)<=Level.GoalRadius)
-            {Finished=true;Player.SetFinished();Clock.SetPaused(true);playback.SetPaused(true);Save();Menu.OpenResults("到巷口了。这段路走完了。");}
+            {Finished=true;Player.SetFinished();Clock.SetPaused(true);playback.SetPaused(true);Save();Menu.OpenResults(Level.Id==StreetLevelFactory.LevelId?"到巷口了。这段路走完了。":"到终点了。这段路走完了。");}
         }
         private void OnFailure(StreetFailure reason,string objectId)
         {

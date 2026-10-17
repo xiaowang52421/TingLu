@@ -1,0 +1,26 @@
+{
+  "recordedAtUtc": "2026-10-17T08:02:31.547632+00:00",
+  "status": "PASS_WITH_EXPLICIT_SCOPE",
+  "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
+  "editorVerification": "docs/editor-v2/验证结果.json",
+  "streetPlayer": {
+    "evidence": "output/street-verification/20261017-160118-9c5680dd/results.json",
+    "status": "PASS",
+    "visible": true,
+    "resolutions": [
+      [
+        1280,
+        720
+      ],
+      [
+        960,
+        640
+      ]
+    ],
+    "scope": "Rendered development Player; deterministic production probe, not human input or listening",
+    "executableSha256": "CC858EB9A7E2DB2D414632600041100BD4840DD2F016593A242B145AFE6C5941"
+  },
+  "manualMouseKeyboard": "NOT_RUN",
+  "physicalAudio": "NOT_RUN",
+  "humanAccessibility": "NOT_RUN"
+}

@@ -16,6 +16,20 @@ namespace TingLu.Bootstrap
     public sealed class StreetEntry : MonoBehaviour
     {
         [SerializeField] private StreetConfig configuration=new StreetConfig();
+        [SerializeField] private TextAsset levelAsset;
+        // Set by StreetPreviewHost and serialized into the temporary additive scene before play. The preview path never reads production saves.
+        [SerializeField, HideInInspector] private string previewJson;
+        [SerializeField, HideInInspector] private string previewSaveDirectory;
+        public void ConfigurePreview(string json,string saveDirectory)
+        {
+            if(string.IsNullOrEmpty(json)||string.IsNullOrEmpty(saveDirectory))throw new ArgumentException("试玩配置或存档目录缺失。");
+            previewJson=json;previewSaveDirectory=saveDirectory;
+        }
+        public void ConfigureLevel(TextAsset asset)
+        {
+            if(asset==null)throw new ArgumentNullException("asset");
+            levelAsset=asset;
+        }
         public StreetSession Session{get;private set;}
         public Camera PlayerCamera{get;private set;}
         public StreetInputSampler InputSampler{get;private set;}
@@ -30,23 +44,50 @@ namespace TingLu.Bootstrap
         {
             try
             {
-                configuration.Validate();
+                bool preview=!string.IsNullOrEmpty(previewJson);
+                if(preview&&string.IsNullOrEmpty(previewSaveDirectory))throw new InvalidOperationException("试玩缺少隔离存档目录。");
+                StreetConfig runtimeConfiguration=configuration??new StreetConfig();
+                if(preview||levelAsset!=null)
+                {
+                    runtimeConfiguration=JsonUtility.FromJson<StreetConfig>(JsonUtility.ToJson(runtimeConfiguration));
+                    if(runtimeConfiguration==null)runtimeConfiguration=new StreetConfig();
+                    // Preview settings and progress must always use their own save namespace.
+                    if(preview)runtimeConfiguration.SaveNamespace="TingLuStreetPreview";
+                }
+                runtimeConfiguration.Validate();
+                bool hasConfiguredLevel=preview||levelAsset!=null;
+                string json=preview?previewJson:(levelAsset==null?null:levelAsset.text);
+                StreetLevel level=hasConfiguredLevel
+                    ?StreetLevelCodec.Compile(StreetLevelCodec.Decode(json))
+                    :StreetLevelFactory.Create();
+                if(!preview&&levelAsset!=null)
+                {
+                    // Authored scenes keep progress and options separate from the shipped street.
+                    using(var hash=System.Security.Cryptography.SHA256.Create())
+                    {
+                        byte[] digest=hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(level.Id));
+                        runtimeConfiguration.SaveNamespace="TingLuStreetCustom_"+BitConverter.ToString(digest).Replace("-","").Substring(0,32);
+                    }
+                }
                 var cameraObject=new GameObject("Street fixed camera");cameraObject.transform.SetParent(transform,false);
                 PlayerCamera=cameraObject.AddComponent<Camera>();PlayerCamera.clearFlags=CameraClearFlags.SolidColor;PlayerCamera.backgroundColor=Color.black;PlayerCamera.cullingMask=1<<8;
-                cameraRig=cameraObject.AddComponent<StreetCameraRig>();cameraRig.Configure(PlayerCamera,configuration);
+                cameraRig=cameraObject.AddComponent<StreetCameraRig>();cameraRig.Configure(PlayerCamera,runtimeConfiguration);
                 var listener=new GameObject("Street player listener");listener.transform.SetParent(transform,false);listener.AddComponent<AudioListener>();
                 playback=gameObject.AddComponent<UnityAudioPlayback>();playback.ConfigureListener(listener.transform);
                 var bridge=new ClockBridge();playback.Initialize(bridge,0);
-                InputSampler=gameObject.AddComponent<StreetInputSampler>();InputSampler.Configure(configuration);InputSampler.SetGameplayActive(false);
+                InputSampler=gameObject.AddComponent<StreetInputSampler>();InputSampler.Configure(runtimeConfiguration);InputSampler.SetGameplayActive(false);
                 // The product path and namespace both isolate this version from the archived demo.
-                string root=Application.persistentDataPath;
+                string root=preview?Path.GetFullPath(previewSaveDirectory):Application.persistentDataPath;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                string diagnosticsRoot=Environment.GetEnvironmentVariable("TINGLU_STREET_SAVE_ROOT");
-                if(!string.IsNullOrWhiteSpace(diagnosticsRoot))root=Path.GetFullPath(diagnosticsRoot);
+                if(!preview)
+                {
+                    string diagnosticsRoot=Environment.GetEnvironmentVariable("TINGLU_STREET_SAVE_ROOT");
+                    if(!string.IsNullOrWhiteSpace(diagnosticsRoot))root=Path.GetFullPath(diagnosticsRoot);
+                }
 #endif
-                var settingsStore=new LocalSaveService(Path.Combine(root,configuration.SaveNamespace,"Options"));
+                var settingsStore=new LocalSaveService(Path.Combine(root,runtimeConfiguration.SaveNamespace,"Options"));
                 var loadedSettings=settingsStore.LoadSettings();
-                Session=new StreetSession(StreetLevelFactory.Create(),playback,playback,new StreetSaveService(root,configuration.SaveNamespace),configuration,loadedSettings.Status==SaveStatus.Success?loadedSettings.Value:null);
+                Session=new StreetSession(level,playback,playback,new StreetSaveService(root,runtimeConfiguration.SaveNamespace),runtimeConfiguration,loadedSettings.Status==SaveStatus.Success?loadedSettings.Value:null);
                 bridge.Target=Session.Clock;
                 Session.SettingsChanged+=settings=>{var result=settingsStore.SaveSettings(settings);if(result!=SaveStatus.Success)subtitle="设置没有保存："+result;};
                 Session.Menu.Subtitle+=text=>subtitle=text;
@@ -54,10 +95,11 @@ namespace TingLu.Bootstrap
                 Session.Error+=text=>{subtitle=text;Debug.LogError(text);};
                 Session.Recovered+=()=>{snapCamera=true;InputSampler.Clear();};
                 playback.Receipt+=receipt=>{if(receipt.Status==AudioStatus.Failed)Debug.LogWarning("Street audio failed: "+receipt.Error);};
-                rendererView=gameObject.AddComponent<StreetRenderer>();rendererView.Configure(PlayerCamera,8,configuration);
+                rendererView=gameObject.AddComponent<StreetRenderer>();rendererView.Configure(PlayerCamera,8,runtimeConfiguration);
                 hud=gameObject.AddComponent<StreetHudPresenter>();hud.Configure(Session.Menu);
                 lastScreen=Session.Menu.Screen;
-                Debug.Log("TingLu Street ready; contract="+StreetContract.Version+"; level="+Session.Level.Id+"; saveNamespace="+configuration.SaveNamespace);
+                Debug.Log("TingLu Street ready; contract="+StreetContract.Version+"; level="+Session.Level.Id+"; saveNamespace="+runtimeConfiguration.SaveNamespace);
+                if(preview)Session.Start(false);
             }
             catch(Exception e){fatal="街区启动失败："+e.Message;Debug.LogException(e);if(InputSampler!=null)InputSampler.SetGameplayActive(false);}
         }
@@ -100,8 +142,16 @@ namespace TingLu.Bootstrap
             {Event.current.Use();ExitFailedStartup();}
         }
         // A partially initialized session is not safe to save while leaving the error screen.
-        private void ExitFailedStartup(){quitting=true;Application.Quit();}
-        public void Quit(){if(quitting)return;quitting=true;if(Session!=null)Session.Save();if(InputSampler!=null)InputSampler.SetGameplayActive(false);Application.Quit();}
+        private void ExitFailedStartup(){quitting=true;
+#if UNITY_EDITOR
+            if(!string.IsNullOrEmpty(previewJson)){UnityEditor.EditorApplication.isPlaying=false;return;}
+#endif
+            Application.Quit();}
+        public void Quit(){if(quitting)return;quitting=true;if(Session!=null)Session.Save();if(InputSampler!=null)InputSampler.SetGameplayActive(false);
+#if UNITY_EDITOR
+            if(!string.IsNullOrEmpty(previewJson)){UnityEditor.EditorApplication.isPlaying=false;return;}
+#endif
+            Application.Quit();}
         private sealed class ClockBridge:IGameClock
         {public IGameClock Target;public double Now{get{return Target==null?0:Target.Now;}}public bool Paused{get{return Target==null||Target.Paused;}}}
     }

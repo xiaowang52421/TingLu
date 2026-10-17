@@ -4,9 +4,17 @@
 
 Git 仓库包含 Unity 工程源码、资源、项目配置、工具和交付文档。克隆后用 Unity **2022.3.62f1c1** 打开仓库根目录，等待依赖解析，再打开下方的 `StreetCrossroads.unity` 场景。`Library` 等缓存和 `output` 下的试玩包、验证输出、交接快照保留在开发机，不纳入 Git；文档中的 `output/...` 路径是本地证据路径，克隆后需通过验证/构建脚本重新生成。Git 属性保留文件原始字节，方便复核已验证源码指纹。
 
-2026-10-17 当前试玩：[从 GitHub Release 下载 Windows 试玩包](https://github.com/xiaowang52421/TingLu/releases/tag/street-2026.10.17-preview.1)。也可直接下载 [Windows ZIP](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.zip) 和 [SHA-256 校验文件](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.sha256.txt)。完整解压后运行 `TingLu.exe`，无需安装 Unity；请保留整个目录。Release 页面自动生成的 Source code 压缩包是源码。当前源码通过 EditMode184/184、PlayMode2/2、Windows构建和1280×720/960×640可见Player。已完成灯态与坡道、重复探测碎片、真实音频池重试、短按输入及菜单裁字修复；235构建文件运行后哈希一致。本次标为 Pre-release，实际设备出声、键鼠手感和真人无障碍仍单列验收，详见[本轮复核](docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md)。
+2026-10-17 当前试玩：[从 GitHub Release 下载 Windows 试玩包](https://github.com/xiaowang52421/TingLu/releases/tag/street-2026.10.17-preview.1)。也可直接下载 [Windows ZIP](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.zip) 和 [SHA-256 校验文件](https://github.com/xiaowang52421/TingLu/releases/download/street-2026.10.17-preview.1/TingLu-Street-Player-2026-10-17-Windows.sha256.txt)。完整解压后运行 `TingLu.exe`，无需安装 Unity；请保留整个目录。Release 页面自动生成的 Source code 压缩包是源码。该 Release 对应源码通过 EditMode184/184、PlayMode2/2、Windows构建和1280×720/960×640可见Player。已完成灯态与坡道、重复探测碎片、真实音频池重试、短按输入及菜单裁字修复；235构建文件运行后哈希一致。本次标为 Pre-release，实际设备出声、键鼠手感和真人无障碍仍单列验收，详见[本轮复核](docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md)。
 
 新版首场景为 `Assets/TingLu/Scenes/Levels/StreetCrossroads.unity`。WASD 或方向键移动，鼠标水平移动转身，右键按下一次敲杖；聆听被动生效，Esc 暂停，G 重听目标。镜头方向固定；空格与 Shift 不再触发旧玩法。新版存档使用独立产品名与命名空间。
+
+## 新版街区关卡编辑器（v2）
+
+用 Unity **2022.3.62f1c1** 打开本工程，选择 **TingLu → 关卡编辑器**（也可选“新版关卡编辑器”）。Windows 可双击根目录 [打开新版关卡编辑器.cmd](打开新版关卡编辑器.cmd)；工程已经打开时，按弹窗提示从 Unity 菜单进入。
+
+从十字路口模板开始，在中文画布和属性表单中编辑道路、盲道、斑马线、坡道、建筑、临时障碍、车辆与行人路线、交通灯、出生点、检查点和终点。保存草稿、检查、隔离试玩、导出 JSON 和可玩 Unity 场景均由界面完成，不需要写代码或手改配置。操作见 [新版使用指南](docs/editor-v2/使用指南.md)，当前验证范围见 [新版验证结果](docs/editor-v2/验证结果.json)。旧版《第一步》编辑器移到 **TingLu → 旧版工具 → 第一步关卡编辑器**；旧 JSON 与新版 schema 2 分别处理。
+
+开发验证：`pwsh -NoProfile -File tools/Verify-StreetEditorV2.ps1`。它会执行新版编辑器用例、新街区回归、PlayMode 和 Windows 构建，各阶段保存源码指纹；实际鼠标操作、设备声音和真人无障碍验收另行记录。上方 Release 是此前街区游戏试玩包，编辑器本身随 Unity 源码工程提供。
 
 新版验证入口：
 
@@ -49,7 +57,7 @@ pwsh -NoProfile -File tools/Verify-LevelEditor.ps1
 
 这些检查不替代 Unity 编译、真实音频、HRTF、视障玩家或设备验收。音效为工程占位合成音；中文语音尝试 Windows System.Speech / SAPI，需要安装可用中文声音。耳机/扬声器选项目前保存偏好，未做设备路由；震动与系统读屏未接入。
 
-零代码关卡编辑器（2026-10-14）：用 Unity 打开工程后，选择 **TingLu → 关卡编辑器**。中文工作台提供模板复制、对象拖放、盲道绘制、人物移动路线、对白/声音表单、撤销重做、草稿保存、检查和试玩。关卡内容进入既有游戏业务；试玩存档使用独立目录。操作步骤见 [关卡编辑器指南](docs/LEVEL_EDITOR_GUIDE.md)。本机 Unity 已可用；工作台鼠标操作与临时场景试玩仍待人工验收。
+旧版零代码关卡编辑器（2026-10-14）：用 Unity 打开工程后，选择 **TingLu → 旧版工具 → 第一步关卡编辑器**。此工作台仅处理 M0《第一步》数据，提供对象拖放、盲道折线、对白等旧版功能；历史操作步骤见 [旧版编辑器指南](docs/LEVEL_EDITOR_GUIDE.md)。制作新版街区请使用上方 v2 入口。
 
 可分步验证导入、EditMode 测试和 Windows 开发构建：
 

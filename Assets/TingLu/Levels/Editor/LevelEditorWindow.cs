@@ -26,7 +26,7 @@ namespace TingLu.Levels.Editor
         private int selectedNode=-1;
         private string selectedRoutePoint="";
         private bool Dirty { get { return buffer!=null&&buffer.json!=savedJson; } }
-        [MenuItem("TingLu/关卡编辑器")]
+        [MenuItem("TingLu/旧版工具/第一步关卡编辑器")]
         public static void ShowWindow(){var w=GetWindow<LevelEditorWindow>();w.titleContent=new GUIContent("听路 · 关卡编辑器");w.minSize=new Vector2(1000,650);w.Show();}
         private void OnEnable()
         {

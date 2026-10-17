@@ -1,42 +1,66 @@
 {
-  "recordedAtUtc": "2026-10-16T17:30:15.6962518Z",
+  "recordedAtUtc": "2026-10-17T08:02:31.547632+00:00",
   "stageVerification": "PASS_WITH_EXPLICIT_SCOPE",
   "requirementsComplete": false,
-  "sourceFingerprint": "C22DCAC72C9FEFE366AB61E4A6A845CFDFED9285F54BC5957BE1520269D27EE2",
+  "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
   "currentSourceMatchesBuildManifest": true,
-  "sourceEntries": 546,
+  "sourceEntries": 566,
+  "editorV2": {
+    "verification": "docs/editor-v2/验证结果.json",
+    "delivery": "docs/editor-v2/交付汇总.json",
+    "testsPassed": 22
+  },
   "unityStages": {
-    "editMode": "output/unity-verification/20261017-012625-474ab9b5/results.json",
-    "playMode": "output/unity-verification/20261017-012658-aed888bb/results.json",
-    "buildWindows": "output/unity-verification/20261017-012714-c16f466d/results.json"
+    "streetEditMode": "output/unity-verification/20261017-160025-900a270c/results.json",
+    "playMode": "output/unity-verification/20261017-160040-99c18f5d/results.json",
+    "buildWindows": "output/unity-verification/20261017-160054-efe8c9db/results.json"
   },
   "players": [
-    "output/street-verification/20261017-012750-ee20f67a/results.json"
+    "output/street-verification/20261017-160118-9c5680dd/results.json"
   ],
-  "packageManifest": "output/听路试玩_2026-10-17_街区交付复核版/package-manifest.json",
-  "packageManifestSha256": "F58082522A03CA07A96C38FE94FD05AE1450149D7A451D7C3211E497D90E4F20",
-  "buildFileCount": 235,
-  "originalProtection": "output/recheck-original-protection-final.json",
-  "visualReview": "主控读取1280x720与960x640六类Player图；菜单标题/字幕裁切已修复，暂停菜单、人物箭头、灯态/坡道、格纹和未知区通过确定性图像复核；仍不替代真人体验",
-  "physicalAudioLatency": "NOT_RUN",
+  "manualMouseKeyboard": "NOT_RUN",
+  "physicalAudio": "NOT_RUN",
   "humanAccessibility": "NOT_RUN",
-  "openItems": [
-    "物理出声延迟、设备听辨、鼠标手感、Alt+Tab、触屏和真人无障碍未验",
-    "启动失败故障注入页面尚未独立运行验证",
-    "本次实走图覆盖NS灯和部分坡道，不替代八片坡道及所有信号相位的完整人工视觉签收"
-  ],
-  "finalQAReport": "docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md",
-  "reviewReplies": [
-    "docs/qa/upgrade/ARCHITECTURE_ADVICE_ROUND2_REPLY_2026-10-16.md",
-    "docs/qa/upgrade/ARCHITECTURE_ADVICE_ROUND3_REPLY_2026-10-16.md"
-  ],
-  "packagePostRunHashes": "docs/qa/upgrade/package-post-run-hashes-20261017.json",
-  "levelEditorUnity": "docs/qa/level-editor-unity-results.json",
-  "audioDiagnostics": "EditMode Role06 real UnityAudioPlayback pool retry/reset tests included in 184/184; software Started is not physical output",
-  "handoffSnapshot": "output/upgrade-handoff/20261017-013811",
-  "handoffStatus": "SAVED_AND_VERIFIED; original protection 246/7/464 passed",
-  "independentQAReport": "docs/qa/upgrade/INDEPENDENT_FINAL_QA_2026-10-17.md",
-  "requirementsClosureReport": "docs/qa/upgrade/REQUIREMENTS_CLOSURE_2026-10-17.md",
-  "handoffArchiveSha256": "C79DAFA2A3AF1BF4C7ECA9D2B454EF5383A1D6928A12372854CB162B7FBD1816",
-  "handoffIndexNote": "Final report files included and verified in snapshot; only this snapshot pointer was updated after archival."
+  "previousStreetDelivery": {
+    "recordedAtUtc": "2026-10-16T17:30:15.6962518Z",
+    "stageVerification": "PASS_WITH_EXPLICIT_SCOPE",
+    "requirementsComplete": false,
+    "sourceFingerprint": "C22DCAC72C9FEFE366AB61E4A6A845CFDFED9285F54BC5957BE1520269D27EE2",
+    "currentSourceMatchesBuildManifest": true,
+    "sourceEntries": 546,
+    "unityStages": {
+      "editMode": "output/unity-verification/20261017-012625-474ab9b5/results.json",
+      "playMode": "output/unity-verification/20261017-012658-aed888bb/results.json",
+      "buildWindows": "output/unity-verification/20261017-012714-c16f466d/results.json"
+    },
+    "players": [
+      "output/street-verification/20261017-012750-ee20f67a/results.json"
+    ],
+    "packageManifest": "output/听路试玩_2026-10-17_街区交付复核版/package-manifest.json",
+    "packageManifestSha256": "F58082522A03CA07A96C38FE94FD05AE1450149D7A451D7C3211E497D90E4F20",
+    "buildFileCount": 235,
+    "originalProtection": "output/recheck-original-protection-final.json",
+    "visualReview": "主控读取1280x720与960x640六类Player图；菜单标题/字幕裁切已修复，暂停菜单、人物箭头、灯态/坡道、格纹和未知区通过确定性图像复核；仍不替代真人体验",
+    "physicalAudioLatency": "NOT_RUN",
+    "humanAccessibility": "NOT_RUN",
+    "openItems": [
+      "物理出声延迟、设备听辨、鼠标手感、Alt+Tab、触屏和真人无障碍未验",
+      "启动失败故障注入页面尚未独立运行验证",
+      "本次实走图覆盖NS灯和部分坡道，不替代八片坡道及所有信号相位的完整人工视觉签收"
+    ],
+    "finalQAReport": "docs/qa/upgrade/FINAL_RECHECK_2026-10-17.md",
+    "reviewReplies": [
+      "docs/qa/upgrade/ARCHITECTURE_ADVICE_ROUND2_REPLY_2026-10-16.md",
+      "docs/qa/upgrade/ARCHITECTURE_ADVICE_ROUND3_REPLY_2026-10-16.md"
+    ],
+    "packagePostRunHashes": "docs/qa/upgrade/package-post-run-hashes-20261017.json",
+    "levelEditorUnity": "docs/qa/level-editor-unity-results.json",
+    "audioDiagnostics": "EditMode Role06 real UnityAudioPlayback pool retry/reset tests included in 184/184; software Started is not physical output",
+    "handoffSnapshot": "output/upgrade-handoff/20261017-013811",
+    "handoffStatus": "SAVED_AND_VERIFIED; original protection 246/7/464 passed",
+    "independentQAReport": "docs/qa/upgrade/INDEPENDENT_FINAL_QA_2026-10-17.md",
+    "requirementsClosureReport": "docs/qa/upgrade/REQUIREMENTS_CLOSURE_2026-10-17.md",
+    "handoffArchiveSha256": "C79DAFA2A3AF1BF4C7ECA9D2B454EF5383A1D6928A12372854CB162B7FBD1816",
+    "handoffIndexNote": "Final report files included and verified in snapshot; only this snapshot pointer was updated after archival."
+  }
 }
