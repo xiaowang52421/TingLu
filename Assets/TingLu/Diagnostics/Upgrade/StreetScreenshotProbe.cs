@@ -43,7 +43,7 @@ namespace TingLu.Diagnostics.Upgrade
             string[] args = Environment.GetCommandLineArgs();
             string output = ArgumentValue(args, OutputArgument);
             string saveRoot = ArgumentValue(args, SaveRootArgument);
-            if (string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(saveRoot)) return;
+            if (string.IsNullOrWhiteSpace(output)) return;
             if (!IsAbsolute(output) || !IsAbsolute(saveRoot))
             {
                 Debug.LogError("Street probe needs absolute output and isolated save-root paths.");

@@ -17,6 +17,7 @@ namespace TingLu.Bootstrap
     {
         public readonly SimulationClock Clock=new SimulationClock();
         public readonly StreetConfig Config;
+        public readonly StreetCollisionFeedback CollisionFeedback;
         public readonly StreetLevel Level;
         public readonly AccessibleMenu Menu=new AccessibleMenu();
         public StreetWorld World{get;private set;}
@@ -52,6 +53,7 @@ namespace TingLu.Bootstrap
         public StreetSession(StreetLevel level,IAudioPlayback backend,IAudioSpeech speechBackend,IStreetSaveService saveService,StreetConfig config=null,UserSettings settings=null)
         {
             Level=level??throw new ArgumentNullException("level");playback=backend??throw new ArgumentNullException("backend");speech=speechBackend;saves=saveService??throw new ArgumentNullException("saveService");Config=config??new StreetConfig();Config.Validate();Settings=settings??new UserSettings(DisplayMode.Standard,OutputMode.Headphones,1,true,false);
+            CollisionFeedback=new StreetCollisionFeedback(Config.CollisionFeedback);
             Clock.SetPaused(true);playback.SetPaused(true);
             var saved=saves.Load(Level.Id);
             Menu.Initialize(Settings,saved.Status==SaveStatus.Success,Level.GoalText,new MenuCallbacks{Start=()=>Start(false),Continue=()=>Start(true),Pause=Pause,Resume=Resume,CanResume=()=>Running&&!Finished&&!recovering&&!sessionFault,Retry=Retry,ReturnToMenu=ReturnToMenu,ReplayGoal=ReplayGoal,SaveOptions=ApplySettings,Quit=RequestQuit},new CurrentSpeech(this),Generation);
@@ -63,6 +65,7 @@ namespace TingLu.Bootstrap
             {
                 SaveResult<StreetSaveData> saved=resume?saves.Load(Level.Id):null;
                 if(resume&&(saved==null||saved.Status!=SaveStatus.Success)){Report("暂时不能继续这份存档："+(saved==null?"读取失败":saved.Status.ToString()));return;}
+                CollisionFeedback.Clear();
                 Clock.SetPaused(true);playback.SetPaused(true);Generation++;if(audio!=null)audio.Reset(Generation);playback.Reset(Generation);
                 World=new StreetWorld(Level.Surfaces,Level.Objects,Level.Routes,Config);
                 Clock.Reset(0);Player=new StreetPlayerController(Config,Clock,World,Level.Spawn);
@@ -71,7 +74,7 @@ namespace TingLu.Bootstrap
                 activated.Clear();Collisions=0;Recoveries=0;Finished=false;CheckpointId="spawn";checkpointPlayer=Level.Spawn;checkpointTraffic=World.ExportTraffic();lastStepAt=-100;
                 signalObservations.Clear();Signals=new StreetSignalObservation[0];
                 Player.Probed+=request=>{Play("cane.tap",request.Origin,FeedbackPriority.Navigation);StreetProbeResult result=perceptionService.Probe(request,World.Capture());Memory.Apply(result);UpdateSignalObservations(result.Signals);};
-                Player.Contacted+=contact=>{if(!contact.Vehicle){Collisions++;Play("collision.bump",contact.Point,FeedbackPriority.Interface);}Memory.Apply(perceptionService.Contact(contact,World.Capture()));};
+                Player.Contacted+=contact=>{CollisionFeedback.Trigger();if(!contact.Vehicle){Collisions++;Play("collision.bump",contact.Point,FeedbackPriority.Interface);}Memory.Apply(perceptionService.Contact(contact,World.Capture()));};
                 Player.Failed+=OnFailure;
                 Player.Stepped+=(material,position)=>
                 {if(Clock.Now-lastStepAt<0.12)return;lastStepAt=Clock.Now;Play("footstep."+material,position,FeedbackPriority.Ambience);};
@@ -87,8 +90,8 @@ namespace TingLu.Bootstrap
                     Finished=data.Finished;
                 }
                 Running=true;Clock.SetPaused(false);RefreshSenses();sessionFault=false;
-                if(Finished){Clock.SetPaused(true);Player.SetFinished();Menu.OpenResults("已经走到街对面了。");}
-                else{Menu.SetPlaying();Clock.SetPaused(false);playback.SetPaused(false);if(!resume)Menu.PresentKnownText("去街对面的巷口。WASD走路，移动鼠标转身，右键敲杖。路上的声音一直都能听见。","street-start",FeedbackPriority.Interface);}
+                if(Finished){Clock.SetPaused(true);Player.SetFinished();Menu.OpenResults(Level.Id==StreetLevelFactory.LevelId?"已经走到街对面了。":"已经走到终点了。");}
+                else{Menu.SetPlaying();Clock.SetPaused(false);playback.SetPaused(false);if(!resume)Menu.PresentKnownText(Level.GoalText+" WASD走路，移动鼠标转身，右键敲杖。路上的声音一直都能听见。","street-start",FeedbackPriority.Interface);}
                 Save();if(Recovered!=null)Recovered();
             }
             catch(Exception e){sessionFault=true;Clock.SetPaused(true);playback.SetPaused(true);Running=false;Menu.Back();Report("街区启动失败："+e.Message);}
@@ -105,6 +108,7 @@ namespace TingLu.Bootstrap
             for(int i=0;i<n;i++)
             {
                 int generation=Generation;
+                CollisionFeedback.Advance(step);
                 World.Tick(step,false);Clock.Advance(step);
                 Player.Tick(new StreetInputFrame(input.Move,i==0?input.TurnDegrees:0,i==0&&input.ProbePressed),step);
                 if(generation!=Generation||Clock.Paused||!Running)return;
@@ -125,7 +129,7 @@ namespace TingLu.Bootstrap
                     Menu.PresentKnownText("这里站稳了。","checkpoint",FeedbackPriority.Interface);if(CheckpointActivated!=null)CheckpointActivated(cp.Id);
                 }
             if(StreetGeometry.Distance(Player.Current.Position,Level.Goal)<=Level.GoalRadius)
-            {Finished=true;Player.SetFinished();Clock.SetPaused(true);playback.SetPaused(true);Save();Menu.OpenResults("到巷口了。这段路走完了。");}
+            {Finished=true;Player.SetFinished();Clock.SetPaused(true);playback.SetPaused(true);Save();Menu.OpenResults(Level.Id==StreetLevelFactory.LevelId?"到巷口了。这段路走完了。":"到终点了。这段路走完了。");}
         }
         private void OnFailure(StreetFailure reason,string objectId)
         {
@@ -174,7 +178,7 @@ namespace TingLu.Bootstrap
             Recover(StreetFailure.Courage,false);
             if(!Clock.Paused)Menu.SetPlaying();
         }
-        public void ReturnToMenu(){if(Running)Save();Running=false;Clock.SetPaused(true);playback.SetPaused(true);Generation++;if(audio!=null)audio.Reset(Generation);playback.Reset(Generation);Sources=new AcousticQueryResult[0];Perception=new PerceptionFrame(0,Clock.Now,new Observation[0]);signalObservations.Clear();Signals=new StreetSignalObservation[0];}
+        public void ReturnToMenu(){if(Running)Save();CollisionFeedback.Clear();Running=false;Clock.SetPaused(true);playback.SetPaused(true);Generation++;if(audio!=null)audio.Reset(Generation);playback.Reset(Generation);Sources=new AcousticQueryResult[0];Perception=new PerceptionFrame(0,Clock.Now,new Observation[0]);signalObservations.Clear();Signals=new StreetSignalObservation[0];}
         public SaveStatus Save()
         {
             // A partially restored session must never replace the last usable save.

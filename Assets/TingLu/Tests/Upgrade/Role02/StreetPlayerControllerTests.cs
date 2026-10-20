@@ -226,7 +226,7 @@ namespace TingLu.Tests.Upgrade.Role02
         }
 
         [Test]
-        public void OrdinaryContactUsesConfiguredFallbackDamageAndDebouncesUntilSeparation()
+        public void OrdinaryContactIgnoresLegacyDamageAndDebouncesUntilSeparation()
         {
             config.Gameplay.damageStatic = 10;
             config.Gameplay.fallStunSeconds = 1.5f;
@@ -240,21 +240,21 @@ namespace TingLu.Tests.Upgrade.Role02
             player.Failed += (reason, id) => failed.Add(reason);
 
             player.Tick(new StreetInputFrame(new Point2(1, 0)), 0);
-            Assert.AreEqual(90, player.Current.Courage, 0.0001f);
-            Assert.AreEqual(PlayerMainState.Stunned, player.Current.MainState);
-            Assert.AreEqual(1.5, player.Current.StunnedUntil, 0.0001);
+            Assert.AreEqual(100, player.Current.Courage, 0.0001f);
+            Assert.AreEqual(PlayerMainState.Active, player.Current.MainState);
+            Assert.AreEqual(0, player.Current.StunnedUntil, 0.0001);
             Assert.AreEqual(1, contacted);
             CollectionAssert.IsEmpty(failed);
 
             clock.Now = 1.5;
             player.Tick(new StreetInputFrame(new Point2()), 0);
             Assert.AreEqual(PlayerMainState.Active, player.Current.MainState);
-            Assert.AreEqual(90, player.Current.Courage, 0.0001f);
+            Assert.AreEqual(100, player.Current.Courage, 0.0001f);
 
             clock.Now = 1.6;
             world.MoveHits = new[] { wall };
             player.Tick(new StreetInputFrame(new Point2()), 0);
-            Assert.AreEqual(80, player.Current.Courage, 0.0001f);
+            Assert.AreEqual(100, player.Current.Courage, 0.0001f);
             Assert.AreEqual(2, contacted);
             CollectionAssert.IsEmpty(failed, "ordinary contact must not be converted into vehicle failure");
         }
@@ -267,6 +267,7 @@ namespace TingLu.Tests.Upgrade.Role02
             config.Gameplay.fallStunSeconds = 0;
             config.Gameplay.contactDebounceSeconds = 0;
             config.Gameplay.contactExitSeconds = 0.1f;
+            int contactEvents=0; player.Contacted+=c=>contactEvents++;
             var wall = new StreetContact("wall", new Point2(0.5f, 0), false);
             world.MoveHits = new[] { wall };
             player.Tick(new StreetInputFrame(new Point2()), 0);
@@ -277,11 +278,12 @@ namespace TingLu.Tests.Upgrade.Role02
             world.MoveHits = new[] { wall };
             player.Tick(new StreetInputFrame(new Point2()), 0);
 
-            Assert.That(player.Current.Courage, Is.EqualTo(accepted ? 80 : 90));
+            Assert.That(player.Current.Courage, Is.EqualTo(100));
+            Assert.That(contactEvents, Is.EqualTo(accepted ? 2 : 1));
         }
 
         [Test]
-        public void OrdinaryContactThatExhaustsCourageRaisesCourageFailureAndSuppressesProbe()
+        public void OrdinaryContactCannotExhaustCourageOrSuppressAProbe()
         {
             config.Gameplay.damageStatic = 100;
             var wall = new StreetContact("wall", new Point2(0.5f, 0), false);
@@ -295,15 +297,15 @@ namespace TingLu.Tests.Upgrade.Role02
 
             player.Tick(new StreetInputFrame(new Point2(1, 0), 0, true), 1);
 
-            CollectionAssert.AreEqual(new[] { "Courage:wall" }, failures);
+            CollectionAssert.IsEmpty(failures);
             Assert.AreEqual(1, contacts);
-            Assert.IsNull(probe, "a courage failure must prevent the simultaneous probe");
-            Assert.AreEqual(0, player.Current.Courage, 0.0001f);
-            Assert.AreEqual(PlayerMainState.Failing, player.Current.MainState);
+            Assert.IsNotNull(probe, "ordinary contact must allow the simultaneous probe");
+            Assert.AreEqual(100, player.Current.Courage, 0.0001f);
+            Assert.AreEqual(PlayerMainState.Active, player.Current.MainState);
         }
 
         [Test]
-        public void SynchronousOrdinaryCourageRestoreIsNotOverwrittenByTheOldTick()
+        public void LegacyOrdinaryDamageCannotInvokeSynchronousRestore()
         {
             config.Gameplay.damageStatic = 100;
             var wall = new StreetContact("wall", new Point2(0.5f, 0), false);
@@ -321,12 +323,26 @@ namespace TingLu.Tests.Upgrade.Role02
 
             player.Tick(new StreetInputFrame(new Point2(1, 0), 90, true), 1);
 
-            Assert.AreEqual(1, failures);
-            Assert.IsNull(probe, "the old tick must stop after synchronous ordinary-contact recovery");
+            Assert.AreEqual(0, failures);
+            Assert.IsNotNull(probe, "ordinary contact cannot initiate recovery");
             Assert.AreEqual(PlayerMainState.Active, player.Current.MainState);
-            Assert.AreEqual(5, player.Current.Position.X, 0.0001f);
-            Assert.AreEqual(6, player.Current.Position.Y, 0.0001f);
+            Assert.AreEqual(config.Gameplay.walkSpeed, player.Current.Position.X, 0.0001f);
+            Assert.AreEqual(0, player.Current.Position.Y, 0.0001f);
             Assert.AreEqual(100, player.Current.Courage, 0.0001f);
+        }
+
+        [Test]
+        public void SimultaneousOrdinaryAndMultipleVehicleContactsPreferOneImmediateVehicleFailure()
+        {
+            world.MoveHits=new[]{new StreetContact("a.wall",new Point2(),false,100,10)};
+            world.VehicleHits=new[]{new StreetContact("a.wall",new Point2(),false),new StreetContact("y.car",new Point2(),true),new StreetContact("z.cycle",new Point2(),true)};
+            var events=new List<string>();int failures=0;
+            player.Contacted+=c=>events.Add(c.ObjectId);
+            player.Failed+=(reason,id)=>{Assert.AreEqual(StreetFailure.Vehicle,reason);failures++;player.Restore(StreetFixtures.Player(new Point2(5,6)),clock.Now,clock.Now);};
+            player.Tick(new StreetInputFrame(new Point2(1,0)),.02);
+            CollectionAssert.AreEqual(new[]{"y.car"},events);
+            Assert.AreEqual(1,failures);Assert.AreEqual(5,player.Current.Position.X);Assert.AreEqual(6,player.Current.Position.Y);
+            Assert.AreEqual(100,player.Current.Courage);
         }
 
         [Test]
@@ -357,8 +373,7 @@ namespace TingLu.Tests.Upgrade.Role02
         [TestCase(true)]
         public void OrdinaryStunStillDetectsVehicleContactUnlessTheSimulationIsPaused(bool paused)
         {
-            world.MoveHits = new[] { new StreetContact("wall", new Point2(), false) };
-            player.Tick(new StreetInputFrame(new Point2()), 0);
+            player = new StreetPlayerController(config,clock,world,State(PlayerMainState.Stunned,new Point2(),new Point2(0,1),100,100,0,1.5,0));
             Assert.That(player.Current.MainState, Is.EqualTo(PlayerMainState.Stunned));
             float courage = player.Current.Courage;
             int moveCalls = world.MoveCalls;

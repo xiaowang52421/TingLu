@@ -1,0 +1,145 @@
+{
+  "recordedAtUtc": "2026-10-17T08:00:09.9526506Z",
+  "status": "PASS",
+  "stages": [
+    {
+      "stage": "EditMode",
+      "filter": "TingLu.Tests.StreetEditorV2",
+      "evidence": "output/unity-verification/20261017-160010-fe12e591/results.json",
+      "result": {
+        "stage": "EditMode",
+        "status": "PASS",
+        "unityPath": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+        "log": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160010-fe12e591\\unity.log",
+        "reason": null,
+        "deviceAudio": "NOT_RUN",
+        "humanAudioOnlyPlaythrough": "NOT_RUN",
+        "verifierSha256": "85DD6B12326D48D6B1DF94A497F07749611900C46F073010C438CD2DA549E904",
+        "projectUnityVersion": "2022.3.62f1c1",
+        "discovery": "project-version-matched editor from environment, registry, PATH, running process, Unity Hub editor list, or ProgramFiles",
+        "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
+        "sourceManifest": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160010-fe12e591\\source-manifest.json",
+        "testResults": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160010-fe12e591\\editmode.xml",
+        "testFilter": "TingLu.Tests.StreetEditorV2",
+        "exitCode": 0,
+        "tests": {
+          "total": 22,
+          "passed": 22,
+          "failed": 0,
+          "skipped": 0,
+          "inconclusive": 0
+        },
+        "sourceUnchangedDuringStage": true
+      }
+    },
+    {
+      "stage": "EditMode",
+      "filter": "TingLu.Tests.Upgrade",
+      "evidence": "output/unity-verification/20261017-160025-900a270c/results.json",
+      "result": {
+        "stage": "EditMode",
+        "status": "PASS",
+        "unityPath": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+        "log": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160025-900a270c\\unity.log",
+        "reason": null,
+        "deviceAudio": "NOT_RUN",
+        "humanAudioOnlyPlaythrough": "NOT_RUN",
+        "verifierSha256": "85DD6B12326D48D6B1DF94A497F07749611900C46F073010C438CD2DA549E904",
+        "projectUnityVersion": "2022.3.62f1c1",
+        "discovery": "project-version-matched editor from environment, registry, PATH, running process, Unity Hub editor list, or ProgramFiles",
+        "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
+        "sourceManifest": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160025-900a270c\\source-manifest.json",
+        "testResults": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160025-900a270c\\editmode.xml",
+        "testFilter": "TingLu.Tests.Upgrade",
+        "exitCode": 0,
+        "tests": {
+          "total": 184,
+          "passed": 184,
+          "failed": 0,
+          "skipped": 0,
+          "inconclusive": 0
+        },
+        "sourceUnchangedDuringStage": true
+      }
+    },
+    {
+      "stage": "PlayMode",
+      "filter": "TingLu.Tests.Upgrade.Acceptance",
+      "evidence": "output/unity-verification/20261017-160040-99c18f5d/results.json",
+      "result": {
+        "stage": "PlayMode",
+        "status": "PASS",
+        "unityPath": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+        "log": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\unity.log",
+        "reason": null,
+        "deviceAudio": "NOT_RUN",
+        "humanAudioOnlyPlaythrough": "NOT_RUN",
+        "verifierSha256": "85DD6B12326D48D6B1DF94A497F07749611900C46F073010C438CD2DA549E904",
+        "projectUnityVersion": "2022.3.62f1c1",
+        "discovery": "project-version-matched editor from environment, registry, PATH, running process, Unity Hub editor list, or ProgramFiles",
+        "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
+        "sourceManifest": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\source-manifest.json",
+        "testResults": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\playmode.xml",
+        "testFilter": "TingLu.Tests.Upgrade.Acceptance",
+        "exitCode": 0,
+        "tests": {
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0,
+          "inconclusive": 0
+        },
+        "screenshots": [
+          {
+            "path": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\street-acceptance\\a25-paused.png",
+            "sha256": "653BC57325A9856B513230F45FC2207A7F5B47FD9C548CBB81610A6FC6E057D4"
+          },
+          {
+            "path": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\street-acceptance\\a30-continued.png",
+            "sha256": "379532EB9621DCE7174C62A3458A846C618CCEBE6AC7838EB477B08FBF858298"
+          },
+          {
+            "path": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\street-acceptance\\a30-finished.png",
+            "sha256": "FA257BB0CF5CCE4733EB0BFB01089C05AC8A48F8CCFBF9E644B012F7F13BF56B"
+          },
+          {
+            "path": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\street-acceptance\\a30-real-collision-recovery.png",
+            "sha256": "379532EB9621DCE7174C62A3458A846C618CCEBE6AC7838EB477B08FBF858298"
+          },
+          {
+            "path": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160040-99c18f5d\\street-acceptance\\a30-start-explored.png",
+            "sha256": "5142736518A8E42587AFA94484ED919445A78EB21A2AEA83D703B9FDA842BEB1"
+          }
+        ],
+        "uniqueScreenshotCount": 4,
+        "sourceUnchangedDuringStage": true
+      }
+    },
+    {
+      "stage": "BuildWindows",
+      "filter": null,
+      "evidence": "output/unity-verification/20261017-160054-efe8c9db/results.json",
+      "result": {
+        "stage": "BuildWindows",
+        "status": "PASS",
+        "unityPath": "C:\\Program Files\\Unity 2022.3.62f1c1\\Editor\\Unity.exe",
+        "log": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160054-efe8c9db\\unity.log",
+        "reason": null,
+        "deviceAudio": "NOT_RUN",
+        "humanAudioOnlyPlaythrough": "NOT_RUN",
+        "verifierSha256": "85DD6B12326D48D6B1DF94A497F07749611900C46F073010C438CD2DA549E904",
+        "projectUnityVersion": "2022.3.62f1c1",
+        "discovery": "project-version-matched editor from environment, registry, PATH, running process, Unity Hub editor list, or ProgramFiles",
+        "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508",
+        "sourceManifest": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160054-efe8c9db\\source-manifest.json",
+        "build": "D:\\听路_街区升级\\output\\unity-verification\\20261017-160054-efe8c9db\\Windows\\TingLu.exe",
+        "exitCode": 0,
+        "sourceUnchangedDuringStage": true
+      }
+    }
+  ],
+  "manualMouseKeyboard": "NOT_RUN",
+  "physicalAudio": "NOT_RUN",
+  "humanAccessibility": "NOT_RUN",
+  "sourceFingerprint": "9E7767899140ECEFD21EC99E5A3D1254A3257C31333DAD852C1DF0234974A508"
+}

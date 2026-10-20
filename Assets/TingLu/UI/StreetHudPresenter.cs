@@ -1,5 +1,6 @@
 using System;
 using TingLu.Contracts;
+using TingLu.Config;
 using UnityEngine;
 
 namespace TingLu.UI
@@ -11,6 +12,13 @@ namespace TingLu.UI
         private UserSettings settings;
         private string subtitle;
         private bool playing;
+        private StreetCollisionFeedback collisionFeedback;
+        private StreetCollisionFeedbackConfig collisionConfig;
+        private Texture2D collisionEdgeTexture;
+        private int collisionTextureScreenWidth = -1, collisionTextureScreenHeight = -1;
+        private float collisionTextureEdgeWidth = -1f;
+        public void ConfigureCollisionFeedback(StreetCollisionFeedback feedback, StreetCollisionFeedbackConfig config)
+        { collisionFeedback=feedback; collisionConfig=config; }
 
         public void Configure(AccessibleMenu controller)
         {
@@ -30,6 +38,7 @@ namespace TingLu.UI
 
         private void OnGUI()
         {
+            DrawCollisionGlow();
             if (menu == null || !playing || menu.Screen != MenuScreen.Playing ||
                 settings == null || settings.Display != DisplayMode.Standard) return;
 
@@ -42,6 +51,75 @@ namespace TingLu.UI
             if (settings.Subtitles && !string.IsNullOrWhiteSpace(subtitle)) DrawSubtitle(scale, statusBottom);
 
             GUI.color = oldColor;
+        }
+
+        private void DrawCollisionGlow()
+        {
+            if (collisionFeedback == null || collisionConfig == null || collisionFeedback.Alpha <= 0 ||
+                Screen.width <= 0 || Screen.height <= 0) return;
+
+            float edgeWidth = Mathf.Min(Screen.width, Screen.height) * collisionConfig.EdgeWidth;
+            if (edgeWidth <= 0) return;
+            EnsureCollisionEdgeTexture(edgeWidth);
+
+            Color old = GUI.color;
+            GUI.color = new Color(collisionConfig.Red, collisionConfig.Green, collisionConfig.Blue,
+                collisionFeedback.Alpha);
+            // One screen-space alpha field avoids band seams and corner overdraw. Its edge
+            // distance uses current pixel dimensions, so the clear center survives any aspect ratio.
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), collisionEdgeTexture,
+                ScaleMode.StretchToFill, true);
+            GUI.color = old;
+        }
+
+        private void EnsureCollisionEdgeTexture(float edgeWidth)
+        {
+            if (collisionEdgeTexture != null && collisionTextureScreenWidth == Screen.width &&
+                collisionTextureScreenHeight == Screen.height &&
+                Mathf.Approximately(collisionTextureEdgeWidth, edgeWidth)) return;
+
+            float scale = Mathf.Min(1f, 512f / Mathf.Max(Screen.width, Screen.height));
+            int textureWidth = Mathf.Max(2, Mathf.RoundToInt(Screen.width * scale));
+            int textureHeight = Mathf.Max(2, Mathf.RoundToInt(Screen.height * scale));
+            if (collisionEdgeTexture == null || collisionEdgeTexture.width != textureWidth ||
+                collisionEdgeTexture.height != textureHeight)
+            {
+                if (collisionEdgeTexture != null) Destroy(collisionEdgeTexture);
+                collisionEdgeTexture = new Texture2D(textureWidth, textureHeight,
+                    TextureFormat.RGBA32, false, true)
+                {
+                    name = "Street collision edge gradient",
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp,
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+            }
+
+            var pixels = new Color32[textureWidth * textureHeight];
+            for (int y = 0; y < textureHeight; y++)
+            {
+                float screenY = (y + .5f) * Screen.height / textureHeight;
+                for (int x = 0; x < textureWidth; x++)
+                {
+                    float screenX = (x + .5f) * Screen.width / textureWidth;
+                    byte alpha = (byte)Mathf.RoundToInt(
+                        StreetCollisionFeedback.ScreenEdgeAlpha(screenX, screenY,
+                            Screen.width, Screen.height, collisionConfig.EdgeWidth) * 255f);
+                    pixels[y * textureWidth + x] = new Color32(255, 255, 255, alpha);
+                }
+            }
+            collisionEdgeTexture.SetPixels32(pixels);
+            collisionEdgeTexture.Apply(false, false);
+            collisionTextureScreenWidth = Screen.width;
+            collisionTextureScreenHeight = Screen.height;
+            collisionTextureEdgeWidth = edgeWidth;
+        }
+
+        private void OnDestroy()
+        {
+            if (collisionEdgeTexture == null) return;
+            Destroy(collisionEdgeTexture);
+            collisionEdgeTexture = null;
         }
 
         private float DrawStatus(int fontSize)

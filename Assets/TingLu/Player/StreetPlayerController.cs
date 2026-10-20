@@ -68,6 +68,7 @@ namespace TingLu.Player
                 now < current.StunnedUntil)
             {
                 // Stun freezes player actions, not the world's moving vehicle hazards.
+                contactsThisTick.Clear();
                 IReadOnlyList<StreetContact> stunnedHits = world.VehicleContacts(current.Position, current.Position, config.BodyRadius);
                 if (stunnedHits != null)
                 {
@@ -76,7 +77,10 @@ namespace TingLu.Player
                         StreetContact contact = stunnedHits[i];
                         if (contact != null && contact.Vehicle && HandleVehicleContact(contact, now, tickGeneration)) return;
                     }
+                    for(int i=0;i<stunnedHits.Count;i++)
+                    {var contact=stunnedHits[i];if(contact!=null&&!contact.Vehicle&&HandleOrdinaryContact(contact,now,tickGeneration))return;}
                 }
+                MarkContactExits(now);
                 return;
             }
 
@@ -136,30 +140,21 @@ namespace TingLu.Player
                 current.Courage, focus, current.CaneReadyAt, current.StunnedUntil, current.ConfusedUntil);
 
             contactsThisTick.Clear();
-            IReadOnlyList<StreetContact> vehicleHits = world.VehicleContacts(from, current.Position, config.BodyRadius);
-            if (vehicleHits != null)
+            var physicalHits = new List<StreetContact>();
+            IReadOnlyList<StreetContact> worldHits = world.VehicleContacts(from, current.Position, config.BodyRadius);
+            if (worldHits != null) physicalHits.AddRange(worldHits);
+            physicalHits.AddRange(movement.Contacts);
+            // Aggregate both physical sources first. A dangerous contact resolves the entire
+            // simulation step immediately, regardless of lexical object ordering or wall samples.
+            for (int i = 0; i < physicalHits.Count; i++)
             {
-                for (int i = 0; i < vehicleHits.Count; i++)
-                {
-                    StreetContact contact = vehicleHits[i];
-                    if (contact == null) continue;
-                    if (contact.Vehicle)
-                    {
-                        if (HandleVehicleContact(contact, now, tickGeneration)) return;
-                    }
-                    else if (HandleOrdinaryContact(contact, now, tickGeneration)) return;
-                }
+                StreetContact contact = physicalHits[i];
+                if (contact != null && contact.Vehicle && HandleVehicleContact(contact, now, tickGeneration)) return;
             }
-
-            for (int i = 0; i < movement.Contacts.Count; i++)
+            for (int i = 0; i < physicalHits.Count; i++)
             {
-                StreetContact contact = movement.Contacts[i];
-                if (contact == null) continue;
-                if (contact.Vehicle)
-                {
-                    if (HandleVehicleContact(contact, now, tickGeneration)) return;
-                }
-                else if (HandleOrdinaryContact(contact, now, tickGeneration)) return;
+                StreetContact contact = physicalHits[i];
+                if (contact != null && !contact.Vehicle && HandleOrdinaryContact(contact, now, tickGeneration)) return;
             }
 
             MarkContactExits(now);
@@ -260,29 +255,11 @@ namespace TingLu.Player
             if (!accepted) return false;
             receipt.LastHit = now;
 
-            float damage = contact.Damage.HasValue ? contact.Damage.Value : config.Gameplay.damageStatic;
-            float stunSeconds = contact.StunSeconds.HasValue ? contact.StunSeconds.Value : config.Gameplay.fallStunSeconds;
-            ValidateEffect(damage, "contact.Damage");
-            ValidateEffect(stunSeconds, "contact.StunSeconds");
-            float courage = Clamp(current.Courage - damage, 0, 100);
-            double stunnedUntil = Math.Max(current.StunnedUntil, now + stunSeconds);
-            PlayerMainState state = courage <= 0 ? PlayerMainState.Failing : PlayerMainState.Stunned;
-            current = Copy(state, ActionMode.Walking, current.Position, current.Facing,
-                courage, current.Focus, current.CaneReadyAt, stunnedUntil, current.ConfusedUntil);
-
+            // Ordinary physical contact is feedback only. Legacy per-object damage/stun and
+            // Gameplay damageStatic must never turn walls, people or parked vehicles into recovery.
             Action<StreetContact> contacted = Contacted;
             if (contacted != null) contacted(contact);
             if (recoveryGeneration != tickGeneration) return true;
-
-            if (courage <= 0)
-            {
-                if (failedGeneration == recoveryGeneration) return true;
-                failedGeneration = recoveryGeneration;
-                Action<StreetFailure, string> failed = Failed;
-                if (failed != null) failed(StreetFailure.Courage, contact.ObjectId);
-                // Failed is synchronous and may have restored the player; leave this simulation step now.
-                return true;
-            }
             return false;
         }
 

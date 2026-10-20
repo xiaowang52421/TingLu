@@ -102,18 +102,101 @@ namespace TingLu.Tests.Upgrade.Role03
         }
 
         [Test]
-        public void VehicleContactEmitsOnceUntilThePlayerSeparates()
+        public void MovingVehicleFinalPoseStillBlocksPlayerMovement()
+        {
+            var car = Box("car", StreetKind.Active, new Point2(-2, 0), 0.25f, 0.2f,
+                vehicleHazard: true);
+            var route = new StreetRoute("car", new[] { new Point2(-2, 0), new Point2(0, 0) }, 2,
+                null, 0, false);
+            var world = Create(new StreetSurface[0], new[] { car }, new[] { route });
+            world.Tick(1, false);
+
+            StreetMoveResult move = world.Move(new Point2(1, 0), new Point2(0, 0), 0.18f);
+
+            Assert.IsTrue(Find(world.Capture(), "car").IsVehicle,
+                "translated copies must retain their actor classification");
+            Assert.AreEqual(1, move.Contacts.Count,
+                "the final pose remains a physical collider after the car moves this tick");
+            Assert.Less(move.Position.X, 0.5f);
+            Assert.Greater(move.Position.X, 0.4f,
+                "the player stops just outside the final vehicle body");
+        }
+
+        [Test]
+        public void VehicleLeavingAnExistingOverlapIsOrdinaryButMovingIntoPlayerIsDangerous()
+        {
+            var car = Box("car", StreetKind.Active, new Point2(0, 0), 0.25f, 0.2f,
+                vehicleHazard: true);
+            var route = new StreetRoute("car", new[] { new Point2(0, 0), new Point2(-1, 0) }, 1,
+                null, 0, false);
+            var world = Create(new StreetSurface[0], new[] { car }, new[] { route });
+            world.Tick(0.5, false);
+
+            IReadOnlyList<StreetContact> leaving = world.VehicleContacts(new Point2(0, 0), new Point2(0, 0), 0.18f);
+            IReadOnlyList<StreetContact> approaching = world.VehicleContacts(
+                new Point2(-0.43f, 0), new Point2(-0.43f, 0), 0.18f);
+
+            Assert.AreEqual(1, leaving.Count);
+            Assert.IsFalse(leaving[0].Vehicle,
+                "an existing overlap that loses penetration as the car leaves is an ordinary sample");
+            Assert.AreEqual(1, approaching.Count);
+            Assert.IsTrue(approaching[0].Vehicle,
+                "a moving car that increases penetration into a touching player is dangerous");
+        }
+
+        [Test]
+        public void FastVehicleCrossingPlayerFromTouchingBoundaryIsDangerousOnce()
+        {
+            var car = Box("crossing-car", StreetKind.Active, new Point2(0, 0), 0.25f, 0.25f,
+                vehicleHazard: true);
+            var route = new StreetRoute("crossing-car", new[] { new Point2(0, 0), new Point2(2, 0) }, 100,
+                null, 0, false);
+            var world = Create(new StreetSurface[0], new[] { car }, new[] { route });
+            world.Tick(0.02, false);
+            Point2 touchingPlayer = new Point2(0.43f, 0);
+
+            IReadOnlyList<StreetContact> first = world.VehicleContacts(touchingPlayer, touchingPlayer, 0.18f);
+
+            Assert.AreEqual(1, first.Count);
+            Assert.IsTrue(first[0].Vehicle,
+                "a fast vehicle moving through a player from an existing boundary contact is dangerous");
+            Assert.IsEmpty(world.VehicleContacts(touchingPlayer, touchingPlayer, 0.18f),
+                "the same vehicle crossing emits at most once in a tick");
+        }
+
+        [Test]
+        public void FastVehicleMovingAwayFromTouchingBoundaryIsOrdinary()
+        {
+            var car = Box("departing-car", StreetKind.Active, new Point2(0, 0), 0.25f, 0.25f,
+                vehicleHazard: true);
+            var route = new StreetRoute("departing-car", new[] { new Point2(0, 0), new Point2(-2, 0) }, 100,
+                null, 0, false);
+            var world = Create(new StreetSurface[0], new[] { car }, new[] { route });
+            world.Tick(0.02, false);
+            Point2 touchingPlayer = new Point2(0.43f, 0);
+
+            IReadOnlyList<StreetContact> contacts = world.VehicleContacts(touchingPlayer, touchingPlayer, 0.18f);
+
+            Assert.AreEqual(1, contacts.Count);
+            Assert.IsFalse(contacts[0].Vehicle,
+                "a fast vehicle moving away from an existing boundary contact is an ordinary sample");
+        }
+
+        [Test]
+        public void ParkedLegacyHazardReturnsOnlyOrdinaryContactSamples()
         {
             var car = Box("parked-cycle", StreetKind.Temporary, new Point2(0, 0), 0.5f, 0.3f,
                 vehicleHazard: true, damage: 15);
             var world = Create(new StreetSurface[0], new[] { car }, new StreetRoute[0]);
 
             world.Tick(0.02, false);
-            Assert.AreEqual(1, world.VehicleContacts(new Point2(0, 0), new Point2(0, 0), 0.1f).Count);
+            var parkedHits=world.VehicleContacts(new Point2(0, 0), new Point2(0, 0), 0.1f);
+            Assert.AreEqual(1, parkedHits.Count);
+            Assert.IsFalse(parkedHits[0].Vehicle);
 
             world.Tick(0.02, false);
-            Assert.AreEqual(0, world.VehicleContacts(new Point2(0, 0), new Point2(0, 0), 0.1f).Count,
-                "continued overlap is the same contact");
+            Assert.IsFalse(world.VehicleContacts(new Point2(0, 0), new Point2(0, 0), 0.1f)[0].Vehicle,
+                "continued overlap remains an ordinary contact sample; controller deduplicates onsets");
 
             world.Tick(0.02, false);
             Assert.AreEqual(0, world.VehicleContacts(new Point2(2, 0), new Point2(2, 0), 0.1f).Count);
@@ -121,6 +204,22 @@ namespace TingLu.Tests.Upgrade.Role03
             world.Tick(0.02, false);
             Assert.AreEqual(1, world.VehicleContacts(new Point2(2, 0), new Point2(0, 0), 0.1f).Count,
                 "a new contact is reported after separation");
+        }
+
+        [Test]
+        public void MovementSoundSyncLeavesSoundOnlySourcesAloneAndMutesStationaryActors()
+        {
+            var soundOnly = new StreetObject("legacy-walker-sound", StreetKind.Permanent, new Point2(),
+                new Point2[0], "brick", false, false, false, 0, 1, "street.walker", true);
+            var parked = new StreetObject("parked-walker", StreetKind.Permanent, new Point2(2, 0),
+                StreetGeometry.Rect(1.8f, -0.2f, 2.2f, 0.2f), "brick", false, false, false, 0, 1,
+                "street.walker", true, PerceptionSemantic.Person, null, null, StreetActorKind.Pedestrian);
+            var world = Create(new StreetSurface[0], new[] { soundOnly, parked }, new StreetRoute[0]);
+
+            Assert.IsTrue(Find(world.Capture(), "legacy-walker-sound").SoundActive,
+                "legacy sound-only sources keep their authored state");
+            Assert.IsFalse(Find(world.Capture(), "parked-walker").SoundActive,
+                "physical actors without a moving route have no movement sound");
         }
 
         [Test]
@@ -159,8 +258,72 @@ namespace TingLu.Tests.Upgrade.Role03
                 "paused worlds suppress vehicle contacts");
             world.ImportTraffic(world.ExportTraffic());
             world.Tick(0.02, false);
-            Assert.AreEqual(1, world.VehicleContacts(boundaryPlayer, boundaryPlayer, 0.18f).Count,
-                "restoring traffic clears stale overlap state and allows the first contact");
+            Assert.AreEqual(0, world.VehicleContacts(boundaryPlayer, boundaryPlayer, 0.18f).Count,
+                "restored initial overlaps must separate before reporting a new collision");
+        }
+
+        [Test]
+        public void MovingVehicleEndpointOverlapUsesThatSegmentMotionAndDeduplicates()
+        {
+            var car = Box("southbound", StreetKind.Active, new Point2(0, -14.8f), 0.4f, 0.8f,
+                vehicleHazard: true);
+            var route = new StreetRoute("southbound", new[]
+            { new Point2(0, -14.8f), new Point2(0, -15.02f) }, 0.22f, null, 0, false);
+            var world = Create(new StreetSurface[0], new[] { car }, new[] { route });
+            world.Tick(1, false);
+
+            Point2 player = new Point2(0, -16);
+            IReadOnlyList<StreetContact> first = world.VehicleContacts(player, player, 0.18f);
+
+            Assert.AreEqual(1, first.Count);
+            Assert.IsTrue(first[0].Vehicle,
+                "endpoint overlap on a moving segment remains dangerous despite float boundary rounding");
+            Assert.IsEmpty(world.VehicleContacts(player, player, 0.18f),
+                "the same moving overlap is deduplicated on repeated queries");
+        }
+
+        [Test]
+        public void RestoredWallOverlapDoesNotCreateMoveSamplesUntilPlayerSeparates()
+        {
+            var wall = Box("wall", StreetKind.Permanent, new Point2(1.05f, 0), 0.05f, 1, solid: true);
+            var world = Create(new StreetSurface[0], new[] { wall }, new StreetRoute[0]);
+            world.ImportTraffic(world.ExportTraffic());
+            world.Tick(0.02, false);
+            Point2 restored = new Point2(0.798f, 0);
+
+            StreetMoveResult firstPush = world.Move(restored, new Point2(1.2f, 0), 0.2f);
+            StreetMoveResult repeatedPush = world.Move(firstPush.Position, new Point2(1.2f, 0), 0.2f);
+            Assert.IsEmpty(firstPush.Contacts,
+                "the restored contact skin suppresses a duplicate sample while preserving the block");
+            Assert.IsEmpty(repeatedPush.Contacts,
+                "pushing against the same restored wall remains suppressed until separation");
+            Assert.AreEqual(firstPush.Position.X, repeatedPush.Position.X, 0.0001f,
+                "restored overlap remains physically blocking");
+
+            StreetMoveResult exit = world.Move(repeatedPush.Position, new Point2(0.4f, 0), 0.2f);
+            Assert.IsEmpty(world.VehicleContacts(repeatedPush.Position, exit.Position, 0.2f),
+                "leaving the restored contact must not produce a relative-sweep contact");
+            StreetMoveResult reentered = world.Move(new Point2(0.4f, 0), new Point2(1.2f, 0), 0.2f);
+            Assert.AreEqual(1, reentered.Contacts.Count,
+                "a real contact is reported again after the restored overlap has separated");
+        }
+
+        [Test]
+        public void LeavingRestoredWallInteriorDoesNotFlashButReentryDoes()
+        {
+            var wall = Box("wall", StreetKind.Permanent, new Point2(0, 0), .5f, .5f, solid: true);
+            var world = Create(new StreetSurface[0], new[] { wall }, new StreetRoute[0]);
+            world.ImportTraffic(world.ExportTraffic());
+            world.Tick(.02, false);
+            Point2 restored = new Point2(.4f, 0);
+            StreetMoveResult exit = world.Move(restored, new Point2(1, 0), .2f);
+            Assert.AreEqual(1, exit.Position.X, .001f);
+            Assert.IsEmpty(exit.Contacts);
+            Assert.IsEmpty(world.VehicleContacts(restored, exit.Position, .2f));
+            world.Tick(.02, false);
+            StreetMoveResult reentry = world.Move(exit.Position, restored, .2f);
+            Assert.AreEqual(1, reentry.Contacts.Count);
+            Assert.AreEqual(1, world.VehicleContacts(exit.Position, reentry.Position, .2f).Count);
         }
 
         [Test]

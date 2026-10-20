@@ -1,7 +1,7 @@
 {
   "status": "PASS",
-  "assets": 294,
-  "uniqueGuids": 294,
+  "assets": 304,
+  "uniqueGuids": 304,
   "assemblies": 40,
   "checks": [
     "Every asset and directory has meta",
