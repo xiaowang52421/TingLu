@@ -6,6 +6,9 @@ namespace TingLu.Contracts
 {
     public static class StreetContract { public const string Version = "1.0.0"; public const int SaveSchema = 1; }
     public enum StreetKind { Permanent, Temporary, Active }
+    // None also represents legacy documents; category inference is only a compatibility step,
+    // never evidence that an actor moved during a contact interval.
+    public enum StreetActorKind { None, Pedestrian, Car, Bicycle, ElectricBike }
     public enum StreetFailure { Vehicle, Courage }
     public struct StreetInputFrame
     {
@@ -86,6 +89,8 @@ namespace TingLu.Contracts
     {
         public readonly string Id,MaterialId,SoundId;
         public readonly StreetKind Kind;
+        public readonly StreetActorKind ActorKind;
+        public bool IsVehicle { get { return ActorKind == StreetActorKind.Car || ActorKind == StreetActorKind.Bicycle || ActorKind == StreetActorKind.ElectricBike; } }
         public readonly Point2 Position;
         public readonly ReadOnlyCollection<Point2> Polygon;
         public readonly bool Solid,VehicleHazard,BlocksProbe,SoundActive;
@@ -94,9 +99,10 @@ namespace TingLu.Contracts
         public readonly PerceptionSemantic Semantic;
         public StreetObject(string id,StreetKind kind,Point2 position,IEnumerable<Point2> polygon,string material,
             bool solid=false,bool vehicleHazard=false,bool blocksProbe=false,float acousticLoss=0,float height=0,
-            string soundId=null,bool soundActive=false,PerceptionSemantic semantic=PerceptionSemantic.Ordinary,float? contactDamage=null,float? contactStun=null)
+            string soundId=null,bool soundActive=false,PerceptionSemantic semantic=PerceptionSemantic.Ordinary,float? contactDamage=null,float? contactStun=null,StreetActorKind actorKind=StreetActorKind.None)
         {Id=ContractGuard.Id(id);Kind=kind;Position=position;Polygon=ContractGuard.Copy(polygon??new Point2[0]);MaterialId=ContractGuard.Id(material);
-         Solid=solid;VehicleHazard=vehicleHazard;BlocksProbe=blocksProbe;AcousticLoss=acousticLoss;Height=height;SoundId=soundId;SoundActive=soundActive;Semantic=semantic;ContactDamage=contactDamage;ContactStun=contactStun;}
+         ActorKind=actorKind!=StreetActorKind.None?actorKind:semantic==PerceptionSemantic.Person||soundId=="street.walker"?StreetActorKind.Pedestrian:soundId=="street.electric"?StreetActorKind.ElectricBike:soundId=="street.cycle"?StreetActorKind.Bicycle:soundId=="street.car"||vehicleHazard?StreetActorKind.Car:StreetActorKind.None;
+         Solid=solid||(ActorKind!=StreetActorKind.None&&Polygon.Count>=3);VehicleHazard=vehicleHazard;BlocksProbe=blocksProbe;AcousticLoss=acousticLoss;Height=height;SoundId=soundId;SoundActive=soundActive;Semantic=semantic;ContactDamage=contactDamage;ContactStun=contactStun;}
     }
     public sealed class StreetWorldFrame
     {
@@ -146,6 +152,8 @@ namespace TingLu.Contracts
         StreetWorldFrame Capture();
         void Tick(double delta,bool paused);
         StreetMoveResult Move(Point2 from,Point2 requested,float radius);
+        // Historical name retained for implementers. Returns physical player contacts;
+        // StreetContact.Vehicle means a moving vehicle intersected during this interval.
         IReadOnlyList<StreetContact> VehicleContacts(Point2 from,Point2 to,float radius);
         string MaterialAt(Point2 position);
         StreetTrafficState ExportTraffic();

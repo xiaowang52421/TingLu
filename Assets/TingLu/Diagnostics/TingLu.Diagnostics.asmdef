@@ -3,6 +3,13 @@
   "rootNamespace": "TingLu.Diagnostics",
   "references": [
     "TingLu.Contracts",
-    "TingLu.Config"
+    "TingLu.Config",
+    "TingLu.Levels",
+    "TingLu.Bootstrap",
+    "TingLu.Bootstrap.Integration",
+    "TingLu.Bootstrap.Core",
+    "TingLu.World",
+    "TingLu.Player",
+    "TingLu.UI"
   ]
 }

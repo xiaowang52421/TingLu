@@ -31,13 +31,13 @@ namespace TingLu.Levels.Editor
 
         public static readonly string[] ObjectTypeIds =
         {
-            "building", "obstacle", "car", "electricBike", "pedestrian", "bird",
+            "building", "obstacle", "car", "parkedCar", "electricBike", "parkedElectricBike", "bicycle", "parkedBicycle", "pedestrian", "standingPedestrian", "bird",
             "signalNs", "signalEw"
         };
 
         public static readonly string[] ObjectTypeNames =
         {
-            "建筑", "临时障碍", "汽车", "电动车", "行人", "鸟鸣", "南北信号灯", "东西信号灯"
+            "建筑", "临时障碍", "行驶汽车", "停放汽车", "行驶电动车", "停放电动车", "行驶自行车", "停放自行车", "行走行人", "静止行人", "鸟鸣", "南北信号灯", "东西信号灯"
         };
 
         public static readonly string[] ObjectMaterialIds =
@@ -170,6 +170,8 @@ namespace TingLu.Levels.Editor
 
         public static string ObjectName(string type)
         {
+            int index = Array.IndexOf(ObjectTypeIds, type);
+            if (index >= 0) return ObjectTypeNames[index];
             ObjectTemplate value = Object(type);
             return value == null ? "未知对象" : value.Name;
         }
@@ -191,18 +193,53 @@ namespace TingLu.Levels.Editor
         }
 
         /// <summary>Infers the palette type from a document object without adding UI-only serialized fields.</summary>
-        public static string GetObjectType(StreetObjectData item)
+        public static string GetObjectType(StreetObjectData item, StreetLevelDocument document = null)
         {
             if (item == null) return null;
             if (item.id == SignalNorthSouthId) return "signalNs";
             if (item.id == SignalEastWestId) return "signalEw";
-            if (item.soundId == "street.electric") return "electricBike";
-            if (item.soundId == "street.car") return "car";
-            if (item.soundId == "street.walker" || item.semantic == PerceptionSemantic.Person) return "pedestrian";
+            string actorType = ActorTypeFor(item.actorKind);
+            if (actorType == null)
+            {
+                // Older documents may not have actorKind. Keep their sound and
+                // semantic fields as a compatibility fallback, after the explicit
+                // actor classification used by new documents.
+                if (item.soundId == "street.cycle") actorType = "bicycle";
+                else if (item.soundId == "street.electric") actorType = "electricBike";
+                else if (item.soundId == "street.car") actorType = "car";
+                else if (item.soundId == "street.walker" || item.semantic == PerceptionSemantic.Person) actorType = "pedestrian";
+            }
+            if (actorType != null)
+            {
+                bool moving = document == null || (document.routes != null &&
+                    document.routes.Exists(route => route != null && route.objectId == item.id));
+                return moving ? actorType : ParkedTypeFor(actorType);
+            }
             if (item.soundId == "street.bird") return "bird";
             if (item.kind == StreetKind.Temporary) return "obstacle";
             if (item.kind == StreetKind.Permanent && item.solid && item.blocksProbe) return "building";
             return null;
+        }
+
+        private static string ActorTypeFor(StreetActorKind kind)
+        {
+            switch (kind)
+            {
+                case StreetActorKind.Pedestrian: return "pedestrian";
+                case StreetActorKind.Car: return "car";
+                case StreetActorKind.Bicycle: return "bicycle";
+                case StreetActorKind.ElectricBike: return "electricBike";
+                default: return null;
+            }
+        }
+
+        private static string ParkedTypeFor(string movingType)
+        {
+            if (movingType == "car") return "parkedCar";
+            if (movingType == "electricBike") return "parkedElectricBike";
+            if (movingType == "bicycle") return "parkedBicycle";
+            if (movingType == "pedestrian") return "standingPedestrian";
+            return movingType;
         }
 
         /// <summary>Applies a palette type's behavior defaults while preserving its map shape and position.</summary>
@@ -220,6 +257,7 @@ namespace TingLu.Levels.Editor
             if (!StringComparer.Ordinal.Equals(desiredId, item.id) && Contains(existingIds, desiredId))
                 throw new InvalidOperationException("关卡中已存在「" + defaults.Name + "」；南北、东西信号灯各只能放置一个。");
             item.id = desiredId;
+            item.actorKind = ActorKindFor(type);
             item.kind = defaults.Kind; item.materialId = defaults.MaterialId; item.soundId = defaults.SoundId;
             item.solid = defaults.Solid; item.vehicleHazard = defaults.VehicleHazard;
             item.blocksProbe = defaults.BlocksProbe; item.acousticLoss = defaults.AcousticLoss;
@@ -266,6 +304,7 @@ namespace TingLu.Levels.Editor
             if (Contains(existingIds, id)) throw new InvalidOperationException("关卡中已经存在这个对象，无法重复创建。");
             if (position == null) position = Point(new Point2(0, 0));
             var data = new StreetObjectData();
+            data.actorKind = ActorKindFor(type);
             data.id = id; data.kind = defaults.Kind; data.position = position;
             data.polygon = polygon == null ? DefaultFootprint(type, position) : new List<StreetPointData>(polygon);
             data.materialId = defaults.MaterialId; data.solid = defaults.Solid;
@@ -351,8 +390,8 @@ namespace TingLu.Levels.Editor
             if (type == "signalNs" || type == "signalEw") return Rectangle(position.x, position.y, .36f, .36f);
             if (type == "building") return Rectangle(position.x, position.y, 8, 8);
             if (type == "obstacle") return Rectangle(position.x, position.y, .7f, .7f);
-            if (type == "car") return Rectangle(position.x, position.y, .96f, 1.6f);
-            if (type == "electricBike") return Rectangle(position.x, position.y, .6f, 1.44f);
+            if (type == "car" || type == "parkedCar") return Rectangle(position.x, position.y, .96f, 1.6f);
+            if (type == "electricBike" || type == "parkedElectricBike" || type == "bicycle" || type == "parkedBicycle") return Rectangle(position.x, position.y, .6f, 1.44f);
             return Rectangle(position.x, position.y, .5f, .5f);
         }
 
@@ -445,11 +484,18 @@ namespace TingLu.Levels.Editor
             AddObject(map, "obstacle", "临时障碍", new Color(.90f, .54f, .16f), StreetKind.Temporary,
                 "metal", null, true, false, true, 0, .7f, false, PerceptionSemantic.Ordinary, null, null);
             AddObject(map, "car", "汽车", new Color(.78f, .24f, .22f), StreetKind.Active,
-                "metal", "street.car", false, true, false, 0, 1.45f, true, PerceptionSemantic.Threat, null, null);
+                "metal", "street.car", true, true, false, 0, 1.45f, true, PerceptionSemantic.Threat, null, null);
             AddObject(map, "electricBike", "电动车", new Color(.18f, .64f, .70f), StreetKind.Active,
-                "metal", "street.electric", false, true, false, 0, .8f, true, PerceptionSemantic.Threat, null, null);
+                "metal", "street.electric", true, true, false, 0, .8f, true, PerceptionSemantic.Threat, null, null);
             AddObject(map, "pedestrian", "行人", new Color(.27f, .48f, .82f), StreetKind.Active,
-                "brick", "street.walker", false, false, false, 0, 1.7f, true, PerceptionSemantic.Person, null, null);
+                "brick", "street.walker", true, false, false, 0, 1.7f, true, PerceptionSemantic.Person, null, null);
+            AddObject(map, "bicycle", "行驶自行车", new Color(.2f,.7f,.5f), StreetKind.Active,
+                "metal", "street.cycle", true, true, false, 0, .8f, true, PerceptionSemantic.Threat, null, null);
+            foreach(string pair in new[]{"parkedCar:car:停放汽车", "parkedElectricBike:electricBike:停放电动车", "parkedBicycle:bicycle:停放自行车", "standingPedestrian:pedestrian:静止行人"})
+            {
+                var parts=pair.Split(':'); var source=map[parts[1]];
+                AddObject(map,parts[0],parts[2],source.Color,StreetKind.Active,source.MaterialId,source.SoundId,true,false,false,0,source.Height,false,source.Semantic,null,null);
+            }
             AddObject(map, "bird", "鸟鸣", new Color(.92f, .76f, .18f), StreetKind.Active,
                 "brick", "street.bird", false, false, false, 0, 0, true, PerceptionSemantic.Ordinary, null, null);
             AddObject(map, "signalNs", "南北信号灯", new Color(.22f, .78f, .32f), StreetKind.Permanent,
@@ -457,6 +503,41 @@ namespace TingLu.Levels.Editor
             AddObject(map, "signalEw", "东西信号灯", new Color(.67f, .37f, .82f), StreetKind.Permanent,
                 "metal", SignalEastWestId, false, false, false, 0, 2f, false, PerceptionSemantic.Ordinary, null, null);
             return map;
+        }
+
+        public static StreetActorKind ActorKindFor(string type)
+        {
+            if (type == "car" || type == "parkedCar") return StreetActorKind.Car;
+            if (type == "electricBike" || type == "parkedElectricBike") return StreetActorKind.ElectricBike;
+            if (type == "bicycle" || type == "parkedBicycle") return StreetActorKind.Bicycle;
+            if (type == "pedestrian" || type == "standingPedestrian") return StreetActorKind.Pedestrian;
+            return StreetActorKind.None;
+        }
+        public static bool StartsMoving(string type)
+        { return type == "car" || type == "electricBike" || type == "bicycle" || type == "pedestrian"; }
+        public static void ConfigureMovement(StreetLevelDocument document, StreetObjectData item, bool moving)
+        {
+            if (document == null) throw new ArgumentNullException("document");
+            if (item == null) return;
+            StreetActorKind kind = item.actorKind;
+            if (kind == StreetActorKind.None) kind = ActorKindFor(GetObjectType(item));
+            if (kind == StreetActorKind.None) return;
+
+            item.actorKind = kind;
+            item.solid = true;
+            if (document.routes == null) document.routes = new List<StreetRouteData>();
+            StreetRouteData route = document.routes.Find(value => value != null && value.objectId == item.id);
+            if (!moving) document.routes.RemoveAll(value => value != null && value.objectId == item.id);
+            else if (route == null)
+            {
+                float speed = kind == StreetActorKind.Pedestrian ? 1 : 3;
+                document.routes.Add(CreateRoute(item.id, new[]
+                {
+                    new StreetPointData(item.position.x, item.position.y),
+                    new StreetPointData(item.position.x + 3, item.position.y)
+                }, speed));
+            }
+            item.soundActive = moving;
         }
 
         private static void AddObject(Dictionary<string, ObjectTemplate> map, string id, string name,

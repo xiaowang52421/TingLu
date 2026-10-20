@@ -40,6 +40,10 @@ namespace TingLu.World
         private readonly List<RouteRuntime> routes = new List<RouteRuntime>();
         private readonly Dictionary<string, RouteRuntime> routesByObject = new Dictionary<string, RouteRuntime>(StringComparer.Ordinal);
         private readonly Dictionary<string, List<MotionSegment>> lastMotion = new Dictionary<string, List<MotionSegment>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, bool> configuredSound = new Dictionary<string, bool>(StringComparer.Ordinal);
+        private readonly HashSet<string> activePhysicalContacts = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> restoreOverlaps = new HashSet<string>(StringComparer.Ordinal);
+        private bool seedRestoreOverlaps;
         private readonly HashSet<string> activeVehicleContacts = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> vehicleContactsThisTick = new HashSet<string>(StringComparer.Ordinal);
         private double time;
@@ -69,6 +73,7 @@ namespace TingLu.World
                 ValidateObject(item);
                 if (this.objects.ContainsKey(item.Id)) throw new ArgumentException("Duplicate world object " + item.Id, "objects");
                 this.objects.Add(item.Id, CopyObject(item, item.Position));
+                configuredSound.Add(item.Id, item.SoundActive);
                 objectIds.Add(item.Id);
             }
             objectIds.Sort(StringComparer.Ordinal);
@@ -100,6 +105,7 @@ namespace TingLu.World
             time = 0;
             SyncSignalSources();
             ResetMotion(0);
+            SyncMovementSounds();
         }
 
         public string SignalPhase
@@ -138,11 +144,13 @@ namespace TingLu.World
             time = newTime;
             SyncSignalSources();
             suppressVehicleContacts = false;
+            SyncMovementSounds();
         }
 
         public StreetMoveResult Move(Point2 from, Point2 requested, float radius)
         {
             ValidateRadius(radius);
+            SeedRestoredOverlaps(from, radius);
             Point2 current = from;
             Point2 target = requested;
             var contacts = new List<StreetContact>();
@@ -164,7 +172,9 @@ namespace TingLu.World
                 for (int i = 0; i < objectIds.Count; i++)
                 {
                     StreetObject item = objects[objectIds[i]];
-                    if (!item.Solid || item.VehicleHazard || item.Polygon.Count < 3) continue;
+                    // Movement runs against the world pose captured for this frame. Moving actors
+                    // still occupy that final pose and must block the player like every solid.
+                    if (!item.Solid || item.Polygon.Count < 3) continue;
                     float hitT;
                     Point2 hitPoint, normal;
                     if (!SweepCirclePolygon(current, target, radius, item.Polygon, out hitT, out hitPoint, out normal)) continue;
@@ -178,8 +188,12 @@ namespace TingLu.World
                 if (!found) { current = target; break; }
 
                 if (contacted.Add(bestObject.Id))
-                    contacts.Add(new StreetContact(bestObject.Id, bestPoint, bestObject.VehicleHazard,
-                        bestObject.ContactDamage, bestObject.ContactStun));
+                {
+                    activePhysicalContacts.Add(bestObject.Id);
+                    if (!restoreOverlaps.Contains(bestObject.Id))
+                        contacts.Add(new StreetContact(bestObject.Id, bestPoint, false,
+                            bestObject.ContactDamage, bestObject.ContactStun));
+                }
 
                 float safeT = Math.Max(0, bestT - ContactSkin / distance);
                 Point2 safe = Lerp(current, target, safeT);
@@ -193,7 +207,42 @@ namespace TingLu.World
                 // An initial overlap has no approach movement to project; preserve the safe origin.
                 if (bestT <= 0.000001f && Length(remainder) >= distance - DistanceEpsilon) break;
             }
+            // Keep restored overlaps through the following relative contact sweep: its
+            // origin can still be inside this object while this Move ends outside it.
+            // VehicleContacts releases the marker after suppressing that exit interval.
             return new StreetMoveResult(current, contacts);
+        }
+
+        private void SeedRestoredOverlaps(Point2 playerPosition, float radius)
+        {
+            if (!seedRestoreOverlaps) return;
+            seedRestoreOverlaps = false;
+            for (int i = 0; i < objectIds.Count; i++)
+            {
+                StreetObject item = objects[objectIds[i]];
+                if (!item.Solid || item.Polygon.Count < 3) continue;
+                Point2 actorPosition = item.Position;
+                List<MotionSegment> motion;
+                if (lastMotion.TryGetValue(item.Id, out motion) && motion.Count > 0) actorPosition = motion[0].Start;
+                Point2 nearest;
+                if (CircleOverlapsPolygon(Subtract(playerPosition, actorPosition), radius + ContactSkin * 2,
+                    LocalPolygon(item), out nearest)) restoreOverlaps.Add(item.Id);
+            }
+        }
+
+        private void ClearSeparatedRestoreOverlaps(Point2 playerPosition, float radius)
+        {
+            if (restoreOverlaps.Count == 0) return;
+            var clear = new List<string>();
+            foreach (string id in restoreOverlaps)
+            {
+                StreetObject item;
+                if (!objects.TryGetValue(id, out item)) { clear.Add(id); continue; }
+                Point2 nearest;
+                if (!CircleOverlapsPolygon(Subtract(playerPosition, item.Position), radius + ContactSkin * 2,
+                    LocalPolygon(item), out nearest)) clear.Add(id);
+            }
+            for (int i = 0; i < clear.Count; i++) restoreOverlaps.Remove(clear[i]);
         }
 
         public IReadOnlyList<StreetContact> VehicleContacts(Point2 from, Point2 to, float radius)
@@ -201,78 +250,96 @@ namespace TingLu.World
             ValidateRadius(radius);
             var result = new List<StreetContact>();
             if (suppressVehicleContacts) return result.AsReadOnly();
+            SeedRestoredOverlaps(from, radius);
             var overlappingNow = new HashSet<string>(StringComparer.Ordinal);
+            var dangerousOverlapsNow = new HashSet<string>(StringComparer.Ordinal);
             for (int i = 0; i < objectIds.Count; i++)
             {
                 StreetObject item = objects[objectIds[i]];
-                if (!item.VehicleHazard || item.Polygon.Count < 3) continue;
-                RouteRuntime route;
+                if (!item.Solid || item.Polygon.Count < 3) continue;
                 List<MotionSegment> segments;
-                bool hit = false;
-                Point2 contactPoint = item.Position;
+                if (!lastMotion.TryGetValue(item.Id, out segments))
+                    segments = new List<MotionSegment> { new MotionSegment { StartFraction=0, EndFraction=1, Start=item.Position, End=item.Position } };
                 Point2[] local = LocalPolygon(item);
-                if (routesByObject.TryGetValue(item.Id, out route) && lastMotion.TryGetValue(item.Id, out segments))
+                Point2 nearest;
+                bool overlaps = CircleOverlapsPolygon(Subtract(to, item.Position), radius + (activePhysicalContacts.Contains(item.Id) ? ContactSkin * 2 : 0), local, out nearest);
+                Point2 restoreNearest;
+                bool restoredOverlapRemains = CircleOverlapsPolygon(Subtract(to, item.Position), radius + ContactSkin * 2, local, out restoreNearest);
+                if (overlaps) overlappingNow.Add(item.Id);
+                bool hit = false, dangerous = false;
+                Point2 contactPoint = Add(item.Position, nearest);
+                for (int j = 0; j < segments.Count; j++)
                 {
-                    for (int j = 0; j < segments.Count; j++)
-                    {
-                        MotionSegment segment = segments[j];
-                        Point2 playerStart = Lerp(from, to, (float)segment.StartFraction);
-                        Point2 playerEnd = Lerp(from, to, (float)segment.EndFraction);
-                        Point2 relativeStart = Subtract(playerStart, segment.Start);
-                        Point2 relativeEnd = Subtract(playerEnd, segment.End);
-                        float hitT;
-                        Point2 localPoint, normal;
-                        if (!SweepCirclePolygon(relativeStart, relativeEnd, radius, local, out hitT, out localPoint, out normal)) continue;
-                        Point2 vehicleAtHit = Lerp(segment.Start, segment.End, hitT);
-                        contactPoint = Add(vehicleAtHit, localPoint);
-                        hit = true;
-                        break;
-                    }
-                    Point2 endRelativePosition = Subtract(to, item.Position);
-                    Point2 nearest;
-                    if (CircleOverlapsPolygon(endRelativePosition, radius, local, out nearest))
-                    {
-                        overlappingNow.Add(item.Id);
-                        // Keep endpoint overlap and first-contact reporting on the same tolerance.
-                        // A sweep can miss a boundary endpoint by a few float ulps even though the
-                        // overlap predicate accepts it; do not mark that contact active silently.
-                        if (!hit)
-                        {
-                            contactPoint = Add(item.Position, nearest);
-                            hit = true;
-                        }
-                    }
-                }
-                else
-                {
-                    // A hazard without a route is still a real stationary vehicle/cycle collider.
-                    Point2 relativeFrom = Subtract(from, item.Position);
-                    Point2 relativeTo = Subtract(to, item.Position);
+                    MotionSegment segment = segments[j];
+                    Point2 playerStart = Lerp(from, to, (float)segment.StartFraction);
+                    Point2 playerEnd = Lerp(from, to, (float)segment.EndFraction);
                     float hitT;
                     Point2 localPoint, normal;
-                    if (SweepCirclePolygon(relativeFrom, relativeTo, radius, local, out hitT, out localPoint, out normal))
+                    Point2 relativeStart = Subtract(playerStart, segment.Start);
+                    Point2 relativeEnd = Subtract(playerEnd, segment.End);
+                    bool swept = SweepCirclePolygon(relativeStart, relativeEnd, radius,
+                        local, out hitT, out localPoint, out normal);
+                    bool segmentMoving = Distance(segment.Start, segment.End) > DistanceEpsilon;
+                    Point2 endpointNearest;
+                    bool startsInside = CircleOverlapsPolygon(relativeStart, radius, local, out endpointNearest);
+                    bool endsInside = CircleOverlapsPolygon(relativeEnd, radius, local, out endpointNearest);
+                    if (!swept && endsInside)
                     {
-                        contactPoint = Add(item.Position, localPoint);
-                        hit = true;
+                        swept = true;
+                        hitT = 1;
+                        localPoint = endpointNearest;
                     }
-                    Point2 nearest;
-                    if (CircleOverlapsPolygon(relativeTo, radius, local, out nearest))
+                    if (!swept) continue;
+                    // A later moving subinterval can qualify even if an earlier waiting interval touched.
+                    if (!hit || segmentMoving) contactPoint = Add(Lerp(segment.Start, segment.End, hitT), localPoint);
+                    hit = true;
+                    if (item.IsVehicle && segmentMoving)
                     {
-                        overlappingNow.Add(item.Id);
-                        if (!hit)
-                        {
-                            contactPoint = Add(item.Position, nearest);
-                            hit = true;
-                        }
+                        // Starting inside a contact can be a restored pose or an actor leaving an
+                        // ordinary overlap. Only treat it as a new impact when relative motion
+                        // increases penetration; outside-to-inside sweeps remain unambiguous hits.
+                        dangerous |= !startsInside ||
+                            (endsInside && OverlapDepth(relativeEnd, radius, local) >
+                                OverlapDepth(relativeStart, radius, local) + DistanceEpsilon) ||
+                            IsMovingIntoContact(relativeStart, relativeEnd, radius, local);
                     }
                 }
-                if (hit && !activeVehicleContacts.Contains(item.Id) && vehicleContactsThisTick.Add(item.Id))
-                    result.Add(new StreetContact(item.Id, contactPoint, true, item.ContactDamage, item.ContactStun));
+                hit |= overlaps;
+                bool suppressed = restoreOverlaps.Contains(item.Id);
+                if (suppressed && !restoredOverlapRemains) restoreOverlaps.Remove(item.Id);
+                if (!hit || suppressed) continue;
+                if (dangerous)
+                {
+                    if (overlaps) dangerousOverlapsNow.Add(item.Id);
+                    if (!activeVehicleContacts.Contains(item.Id) && vehicleContactsThisTick.Add(item.Id))
+                        result.Add(new StreetContact(item.Id, contactPoint, true, item.ContactDamage, item.ContactStun));
+                }
+                else
+                    result.Add(new StreetContact(item.Id, contactPoint, false, item.ContactDamage, item.ContactStun));
             }
+            seedRestoreOverlaps = false;
             activeVehicleContacts.Clear();
-            foreach (string id in overlappingNow) activeVehicleContacts.Add(id);
+            foreach (string id in overlappingNow) if (dangerousOverlapsNow.Contains(id)) activeVehicleContacts.Add(id);
+            activePhysicalContacts.Clear();
+            foreach (string id in overlappingNow) activePhysicalContacts.Add(id);
             result.Sort(delegate(StreetContact a, StreetContact b) { return StringComparer.Ordinal.Compare(a.ObjectId, b.ObjectId); });
             return result.AsReadOnly();
+        }
+
+        private void SyncMovementSounds()
+        {
+            foreach (string id in objectIds)
+            {
+                StreetObject item = objects[id];
+                if (item.ActorKind == StreetActorKind.None || item.Polygon.Count < 3) continue;
+                // At route end/red light, movement sounds stop; bird and signal sources retain their rules.
+                RouteRuntime route;
+                bool moving = routesByObject.TryGetValue(id, out route) &&
+                    (route.Route.Loop || route.Distance < route.Length - DistanceEpsilon) &&
+                    !(route.Route.SignalAxis != null && route.Route.StopLineDistance.HasValue &&
+                      Math.Abs(NextStopLine(route, route.Distance) - route.Distance) <= DistanceEpsilon && !IsGreen(route.Route.SignalAxis, time));
+                objects[id] = CopyObject(item, item.Position, configuredSound[id] && moving);
+            }
         }
 
         public string MaterialAt(Point2 position)
@@ -336,8 +403,12 @@ namespace TingLu.World
             SyncSignalSources();
             suppressVehicleContacts = true;
             activeVehicleContacts.Clear();
+            activePhysicalContacts.Clear();
+            restoreOverlaps.Clear();
+            seedRestoreOverlaps = true;
             vehicleContactsThisTick.Clear();
             ResetMotion(0);
+            SyncMovementSounds();
         }
 
         public void MoveObject(string id, Point2 newPosition)
@@ -574,7 +645,7 @@ namespace TingLu.World
             for (int i = 0; i < source.Polygon.Count; i++) polygon.Add(Add(source.Polygon[i], shift));
             return new StreetObject(source.Id, source.Kind, position, polygon, source.MaterialId, source.Solid,
                 source.VehicleHazard, source.BlocksProbe, source.AcousticLoss, source.Height, source.SoundId,
-                soundActive, source.Semantic, source.ContactDamage, source.ContactStun);
+                soundActive, source.Semantic, source.ContactDamage, source.ContactStun, source.ActorKind);
         }
 
         private static Point2[] LocalPolygon(StreetObject item)
@@ -667,6 +738,30 @@ namespace TingLu.World
         {
             nearest = ClosestBoundaryPoint(center, polygon);
             return PointInPolygon(center, polygon) || Distance(center, nearest) <= radius + DistanceEpsilon;
+        }
+
+        private static float OverlapDepth(Point2 center, float radius, IReadOnlyList<Point2> polygon)
+        {
+            float distance = Distance(center, ClosestBoundaryPoint(center, polygon));
+            return PointInPolygon(center, polygon) ? radius + distance : radius - distance;
+        }
+
+        private static bool IsMovingIntoContact(Point2 start, Point2 end, float radius,
+            IReadOnlyList<Point2> polygon)
+        {
+            Point2 relativeMotion = Subtract(end, start);
+            float distance = Length(relativeMotion);
+            if (distance <= DistanceEpsilon) return false;
+
+            // A sweep that begins overlapped reports t=0 and cannot tell an entering vehicle
+            // from one leaving the contact. Compare penetration a short distance into this
+            // same straight motion segment, small enough to stay near the contact onset even
+            // when a fast vehicle crosses the whole player body before the segment ends.
+            float probeDistance = Math.Min(ContactSkin, distance * 0.25f);
+            if (probeDistance <= DistanceEpsilon) return false;
+            Point2 probe = Lerp(start, end, probeDistance / distance);
+            return OverlapDepth(probe, radius, polygon) >
+                OverlapDepth(start, radius, polygon) + DistanceEpsilon;
         }
 
         private static bool SweepPointCircle(Point2 origin, Point2 movement, Point2 center, float radius, out float time)

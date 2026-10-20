@@ -235,14 +235,14 @@ namespace TingLu.Levels.Editor
             }
             GUILayout.Space(5);
             if (GUILayout.Button("添加检查点", EditorStyles.miniButton)) ArmPlacement("checkpoint", "checkpoint");
-            if (GUILayout.Button("为选中对象添加路线", EditorStyles.miniButton)) AddRoute();
+            if (GUILayout.Button("让选中人物或车辆开始移动", EditorStyles.miniButton)) AddRoute();
             if (GUILayout.Button("查看整个关卡", EditorStyles.miniButton)) FrameAll();
             if (!string.IsNullOrEmpty(placingKind))
                 GUILayout.Label("画布点一下放置：" + (placingKind == "surface" ? StreetEditorCatalog.SurfaceName(placingId) : placingKind == "object" ? StreetEditorCatalog.ObjectName(placingId) : "检查点"), EditorStyles.helpBox);
             GUILayout.Space(7);
             GUILayout.Label("对象列表", EditorStyles.miniBoldLabel);
             foreach (var surface in document.surfaces) if (surface != null && GUILayout.Button("地面 · " + surface.id, EditorStyles.miniButton)) Select("surface", surface.id);
-            foreach (var item in document.objects) if (item != null && GUILayout.Button("对象 · " + StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(item)) + " · " + item.id, EditorStyles.miniButton)) Select("object", item.id);
+            foreach (var item in document.objects) if (item != null && GUILayout.Button("对象 · " + StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(item, document)) + " · " + item.id, EditorStyles.miniButton)) Select("object", item.id);
             foreach (var checkpoint in document.checkpoints) if (checkpoint != null && GUILayout.Button("检查点 · " + checkpoint.id, EditorStyles.miniButton)) Select("checkpoint", checkpoint.id);
             foreach (var route in document.routes) if (route != null && GUILayout.Button("路线 · " + route.objectId, EditorStyles.miniButton)) SelectRoute(route.objectId);
             GUILayout.EndScrollView();
@@ -266,7 +266,7 @@ namespace TingLu.Levels.Editor
                 for (float x = Mathf.Floor(xmin / step) * step; x <= xmax; x += step) DrawLine(new Point2(x, ymin), new Point2(x, ymax), 1);
                 for (float y = Mathf.Floor(ymin / step) * step; y <= ymax; y += step) DrawLine(new Point2(xmin, y), new Point2(xmax, y), 1);
                 foreach (var s in document.surfaces) if (s != null) DrawPolygon(s.polygon, StreetEditorCatalog.GetSurfaceColor(s.materialId), selectedKind == "surface" && selectedId == s.id);
-                foreach (var item in document.objects) if (item != null) { DrawPolygon(item.polygon, StreetEditorCatalog.GetObjectColor(StreetEditorCatalog.GetObjectType(item)), selectedKind == "object" && selectedId == item.id); if (item.polygon == null || item.polygon.Count < 3) DrawMarker(item.position == null ? new Point2() : item.position.ToPoint(), StreetEditorCatalog.GetObjectColor(StreetEditorCatalog.GetObjectType(item)), StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(item)), selectedKind == "object" && selectedId == item.id); }
+                foreach (var item in document.objects) if (item != null) { DrawPolygon(item.polygon, StreetEditorCatalog.GetObjectColor(StreetEditorCatalog.GetObjectType(item, document)), selectedKind == "object" && selectedId == item.id); if (item.polygon == null || item.polygon.Count < 3) DrawMarker(item.position == null ? new Point2() : item.position.ToPoint(), StreetEditorCatalog.GetObjectColor(StreetEditorCatalog.GetObjectType(item, document)), StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(item, document)), selectedKind == "object" && selectedId == item.id); }
                 foreach (var route in document.routes) if (route != null) DrawRoute(route);
                 DrawMarker(new Point2(document.spawnX, document.spawnY), Color.cyan, "出生", selectedKind == "spawn");
                 DrawMarker(new Point2(document.goalX, document.goalY), Color.green, "终点", selectedKind == "goal");
@@ -376,7 +376,7 @@ namespace TingLu.Levels.Editor
             GUILayout.Label("地面 / 对象 / 检查点 / 路线", EditorStyles.boldLabel);
             listScroll = GUILayout.BeginScrollView(listScroll);
             foreach (var s in document.surfaces) if (s != null && GUILayout.Button("地面 · " + StreetEditorCatalog.SurfaceName(s.materialId) + " · " + s.id)) Select("surface", s.id);
-            foreach (var o in document.objects) if (o != null && GUILayout.Button("对象 · " + StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(o)) + " · " + o.id)) Select("object", o.id);
+            foreach (var o in document.objects) if (o != null && GUILayout.Button("对象 · " + StreetEditorCatalog.ObjectName(StreetEditorCatalog.GetObjectType(o, document)) + " · " + o.id)) Select("object", o.id);
             foreach (var c in document.checkpoints) if (c != null && GUILayout.Button("检查点 · " + c.id)) Select("checkpoint", c.id);
             foreach (var r in document.routes) if (r != null && GUILayout.Button("路线 · " + r.objectId)) SelectRoute(r.objectId);
             GUILayout.EndScrollView();
@@ -429,14 +429,99 @@ namespace TingLu.Levels.Editor
         }
         private void ObjectInspector(StreetObjectData o)
         {
-            string type = StreetEditorCatalog.GetObjectType(o); int index = Array.IndexOf(StreetEditorCatalog.ObjectTypeIds, type); int current = Mathf.Max(0, index); int next = EditorGUILayout.Popup("类型", current, StreetEditorCatalog.ObjectTypeNames); if (next != current && next >= 0) { try { string oldId = o.id; StreetEditorCatalog.ApplyObjectType(o, StreetEditorCatalog.ObjectTypeIds[next], ExistingIds(o.id)); selectedId = o.id; foreach (var route in document.routes) if (route != null && route.objectId == oldId) route.objectId = o.id; } catch (Exception error) { issues.Add("错误：" + error.Message); } }
-            ReadOnlyId("对象编号", o.id); ObjectPositionFields(o); FloatField("高度", ref o.height); FloatField("声学损失", ref o.acousticLoss); NullableFloatField("接触伤害", ref o.contactDamage); NullableFloatField("接触眩晕秒数", ref o.contactStun); BoolField("实体碰撞", ref o.solid); BoolField("车辆危险", ref o.vehicleHazard); BoolField("阻挡探测", ref o.blocksProbe); BoolField("声音激活", ref o.soundActive); EnumField("记忆类型", ref o.kind, new[] { "永久环境", "临时障碍", "活动对象" }); EnumField("感知语义", ref o.semantic, new[] { "未知", "普通", "人物", "危险", "交互", "引导" }); CatalogPopup("材质", StreetEditorCatalog.ObjectMaterialIds, StreetEditorCatalog.ObjectMaterialNames, ref o.materialId); CatalogPopup("声音", StreetEditorCatalog.SoundIds, StreetEditorCatalog.SoundNames, ref o.soundId); DrawPolygonInspector(o.polygon); DrawSizeControls(o.polygon);
+            string type = StreetEditorCatalog.GetObjectType(o, document);
+            int index = Array.IndexOf(StreetEditorCatalog.ObjectTypeIds, type);
+            int current = Mathf.Max(0, index);
+            int next = EditorGUILayout.Popup("对象类型", current, StreetEditorCatalog.ObjectTypeNames);
+            if (next != current && next >= 0)
+            {
+                try
+                {
+                    string oldId = o.id;
+                    string newType = StreetEditorCatalog.ObjectTypeIds[next];
+                    StreetEditorCatalog.ApplyObjectType(o, newType, ExistingIds(o.id));
+                    selectedId = o.id;
+                    if (StreetEditorCatalog.ActorKindFor(newType) == StreetActorKind.None)
+                        document.routes.RemoveAll(route => route != null && route.objectId == oldId);
+                    else
+                    {
+                        foreach (var route in document.routes)
+                            if (route != null && route.objectId == oldId) route.objectId = o.id;
+                        StreetEditorCatalog.ConfigureMovement(document, o, StreetEditorCatalog.StartsMoving(newType));
+                    }
+                    type = newType;
+                }
+                catch (Exception error) { issues.Add("错误：" + error.Message); }
+            }
+            bool isActor = StreetEditorCatalog.ActorKindFor(type) != StreetActorKind.None;
+            if (isActor)
+            {
+                bool moving = document.routes.Exists(route => route != null && route.objectId == o.id);
+                int mode = EditorGUILayout.Popup("移动状态", moving ? 1 : 0,
+                    new[] { "静止（无需路线）", "行走 / 行驶（编辑路线）" });
+                if ((mode == 1) != moving) StreetEditorCatalog.ConfigureMovement(document, o, mode == 1);
+                StreetRouteData actorRoute = document.routes.Find(route => route != null && route.objectId == o.id);
+                if (actorRoute != null) RouteInspector(actorRoute);
+            }
+            ReadOnlyId("对象编号", o.id);
+            ObjectPositionFields(o);
+            FloatField("高度", ref o.height);
+            FloatField("声学损失", ref o.acousticLoss);
+            GUILayout.Label("普通碰撞仅有阻挡和反馈，不扣值或眩晕。", EditorStyles.wordWrappedMiniLabel);
+            if (isActor) GUILayout.Label("实体碰撞：开启（运行时强制）", EditorStyles.wordWrappedMiniLabel);
+            else BoolField("实体碰撞", ref o.solid);
+            GUILayout.Label("仅碰撞发生时实际运动的车辆恢复检查点。", EditorStyles.wordWrappedMiniLabel);
+            BoolField("阻挡探测", ref o.blocksProbe);
+            BoolField("声音激活", ref o.soundActive);
+            EnumField("记忆类型", ref o.kind, new[] { "永久环境", "临时障碍", "活动对象" });
+            EnumField("感知语义", ref o.semantic, new[] { "未知", "普通", "人物", "危险", "交互", "引导" });
+            CatalogPopup("材质", StreetEditorCatalog.ObjectMaterialIds, StreetEditorCatalog.ObjectMaterialNames, ref o.materialId);
+            CatalogPopup("声音", StreetEditorCatalog.SoundIds, StreetEditorCatalog.SoundNames, ref o.soundId);
+            DrawPolygonInspector(o.polygon);
+            DrawSizeControls(o.polygon);
             if (GUILayout.Button("删除对象")) { document.objects.Remove(o); document.routes.RemoveAll(x => x != null && x.objectId == o.id); selectedKind = selectedId = ""; Commit("删除对象"); }
         }
         private void CheckpointInspector(StreetCheckpointData c)
         { GUILayout.Label("检查点 · " + c.id, EditorStyles.miniBoldLabel); FloatField("位置 X", ref c.position.x); FloatField("位置 Y", ref c.position.y); FloatField("朝向 X", ref c.facing.x); FloatField("朝向 Y", ref c.facing.y); FloatField("半径", ref c.radius); if (GUILayout.Button("删除检查点")) { document.checkpoints.Remove(c); selectedKind = selectedId = ""; Commit("删除检查点"); } }
         private void RouteInspector(StreetRouteData route)
-        { GUILayout.Label("路线 · " + route.objectId, EditorStyles.miniBoldLabel); FloatField("速度", ref route.speed); DoubleField("起始偏移（米）", ref route.offset); route.loop = EditorGUILayout.Toggle("循环", route.loop); int axis = route.signalAxis == null ? 0 : route.signalAxis == "ns" ? 1 : 2; int next = EditorGUILayout.Popup("信号控制", axis, new[] { "无", "南北", "东西" }); route.signalAxis = next == 0 ? null : next == 1 ? "ns" : "ew"; if (route.signalAxis != null) { float stop = route.stopLineDistance ?? 0; FloatField("停车线距离", ref stop); route.stopLineDistance = stop; } if (route.points != null) { GUILayout.Label("路线节点", EditorStyles.miniBoldLabel); for (int i = 0; i < route.points.Count; i++) { GUILayout.BeginHorizontal(); GUILayout.Label((i + 1).ToString(), GUILayout.Width(22)); float px = EditorGUILayout.FloatField(route.points[i].x); float py = EditorGUILayout.FloatField(route.points[i].y); if (px != route.points[i].x || py != route.points[i].y) MoveRoutePoint(route, i, px, py); if (GUILayout.Button("×", GUILayout.Width(24)) && route.points.Count > 2) { route.points.RemoveAt(i); i--; GUI.changed = true; } GUILayout.EndHorizontal(); } if (GUILayout.Button("添加末尾节点")) { var p = route.points.Count == 0 ? new StreetPointData(0, 0) : route.points[route.points.Count - 1]; route.points.Add(new StreetPointData(p.x + 2, p.y)); GUI.changed = true; } } if (GUILayout.Button("删除路线")) { document.routes.Remove(route); selectedRoute = ""; Commit("删除路线"); } }
+        {
+            GUILayout.Label("路线 · " + route.objectId, EditorStyles.miniBoldLabel);
+            FloatField("速度（米/秒）", ref route.speed);
+            DoubleField("起始偏移（米）", ref route.offset);
+            route.loop = EditorGUILayout.Toggle("到达末端后循环", route.loop);
+            int axis = route.signalAxis == null ? 0 : route.signalAxis == "ns" ? 1 : 2;
+            int next = EditorGUILayout.Popup("信号控制", axis, new[] { "无", "南北", "东西" });
+            route.signalAxis = next == 0 ? null : next == 1 ? "ns" : "ew";
+            if (route.signalAxis != null)
+            {
+                float stop = route.stopLineDistance ?? 0;
+                FloatField("停车线距离", ref stop);
+                route.stopLineDistance = stop;
+            }
+            if (route.points != null)
+            {
+                GUILayout.Label("路线节点", EditorStyles.miniBoldLabel);
+                for (int i = 0; i < route.points.Count; i++)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label((i + 1).ToString(), GUILayout.Width(22));
+                    float px = EditorGUILayout.FloatField(route.points[i].x);
+                    float py = EditorGUILayout.FloatField(route.points[i].y);
+                    if (px != route.points[i].x || py != route.points[i].y) MoveRoutePoint(route, i, px, py);
+                    if (GUILayout.Button("×", GUILayout.Width(24)) && route.points.Count > 2)
+                    { route.points.RemoveAt(i); i--; GUI.changed = true; }
+                    GUILayout.EndHorizontal();
+                }
+                if (GUILayout.Button("添加末尾节点"))
+                {
+                    var point = route.points.Count == 0 ? new StreetPointData(0, 0) : route.points[route.points.Count - 1];
+                    route.points.Add(new StreetPointData(point.x + 2, point.y));
+                    GUI.changed = true;
+                }
+            }
+            if (GUILayout.Button("删除路线"))
+            { document.routes.Remove(route); selectedRoute = ""; Commit("删除路线"); }
+        }
         private void FloatField(string label, ref float value) { value = EditorGUILayout.FloatField(label, value); }
         private void DoubleField(string label, ref double value) { value = EditorGUILayout.DoubleField(label, value); }
         private void TextField(string label, ref string value) { value = EditorGUILayout.TextField(label, value ?? ""); }
@@ -492,11 +577,27 @@ namespace TingLu.Levels.Editor
         private void AddSurfaceAt(string material, Point2 p)
         { var polygon = StreetEditorCatalog.Rectangle(p.X, p.Y, 4, 4); var item = StreetEditorCatalog.CreateSurface(material, polygon, ExistingIds()); document.surfaces.Add(item); Select("surface", item.id); Commit("添加地面"); }
         private void AddObjectAt(string type, Point2 p)
-        { var item = StreetEditorCatalog.CreateObject(type, StreetEditorCatalog.Point(p), null, ExistingIds()); document.objects.Add(item); Select("object", item.id); Commit("添加对象"); }
+        { var item = StreetEditorCatalog.CreateObject(type, StreetEditorCatalog.Point(p), null, ExistingIds()); document.objects.Add(item); StreetEditorCatalog.ConfigureMovement(document,item,StreetEditorCatalog.StartsMoving(type)); Select("object", item.id); Commit("添加对象"); }
         private void AddCheckpointAt(Point2 p)
         { var item = StreetEditorCatalog.CreateCheckpoint(null, StreetEditorCatalog.Point(p)); document.checkpoints.Add(item); Select("checkpoint", item.id); Commit("添加检查点"); }
         private void AddRoute()
-        { var o = document.objects.Find(x => x != null && x.id == selectedId); if (o == null || o.kind != StreetKind.Active || document.routes.Exists(x => x != null && x.objectId == o.id)) { issues.Add("提示：请先选择没有路线的动态对象。"); return; } var p = o.position; document.routes.Add(StreetEditorCatalog.CreateRoute(o.id, new List<StreetPointData> { new StreetPointData(p.x, p.y), new StreetPointData(p.x + 3, p.y) }, 1)); SelectRoute(o.id); Commit("添加路线"); }
+        {
+            var item = document.objects.Find(value => value != null && value.id == selectedId);
+            if (item == null || StreetEditorCatalog.ActorKindFor(StreetEditorCatalog.GetObjectType(item, document)) == StreetActorKind.None)
+            {
+                issues.Add("提示：先选中一名行人或一辆汽车、自行车、电动车，再设置移动路线。");
+                return;
+            }
+            if (document.routes.Exists(route => route != null && route.objectId == item.id))
+            {
+                SelectRoute(item.id);
+                issues.Add("提示：该对象已有路线，可在属性检查器中编辑速度、循环和路线节点。");
+                return;
+            }
+            StreetEditorCatalog.ConfigureMovement(document, item, true);
+            SelectRoute(item.id);
+            Commit("开始移动并添加路线");
+        }
         private IEnumerable<string> ExistingIds(string except = null) { var ids = new List<string>(); ids.Add(document.id); foreach (var x in document.surfaces) if (x != null && x.id != except) ids.Add(x.id); foreach (var x in document.objects) if (x != null && x.id != except) ids.Add(x.id); foreach (var x in document.checkpoints) if (x != null && x.id != except) ids.Add(x.id); return ids; }
 
         private void Select(string kind, string id) { selectedKind = kind; selectedId = id; selectedRoute = ""; selectedRoutePoint = -1; }

@@ -97,6 +97,7 @@ namespace TingLu.Bootstrap
                 playback.Receipt+=receipt=>{if(receipt.Status==AudioStatus.Failed)Debug.LogWarning("Street audio failed: "+receipt.Error);};
                 rendererView=gameObject.AddComponent<StreetRenderer>();rendererView.Configure(PlayerCamera,8,runtimeConfiguration);
                 hud=gameObject.AddComponent<StreetHudPresenter>();hud.Configure(Session.Menu);
+                hud.ConfigureCollisionFeedback(Session.CollisionFeedback,runtimeConfiguration.CollisionFeedback);
                 lastScreen=Session.Menu.Screen;
                 Debug.Log("TingLu Street ready; contract="+StreetContract.Version+"; level="+Session.Level.Id+"; saveNamespace="+runtimeConfiguration.SaveNamespace);
                 if(preview)Session.Start(false);
@@ -113,6 +114,11 @@ namespace TingLu.Bootstrap
             Session.Tick(input,Math.Min(Time.unscaledDeltaTime,0.1f));
             if(Session.Menu.Screen!=lastScreen)
             {lastScreen=Session.Menu.Screen;InputSampler.Clear();snapCamera=true;InputSampler.SetGameplayActive(Session.Running&&lastScreen==MenuScreen.Playing&&!Session.Clock.Paused&&!Session.Finished);}
+            PresentCurrentFrame();
+        }
+        public void PresentCurrentFrame()
+        {
+            if(Session==null)return;
             playback.SetMasterVolume(Session.Settings.MasterVolume);
             if(Session.Player!=null)
             {

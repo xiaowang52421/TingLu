@@ -65,6 +65,7 @@ namespace TingLu.Levels
         [DataMember(Order = 8)] public bool soundActive;
         [DataMember(Order = 9)] public PerceptionSemantic semantic = PerceptionSemantic.Ordinary;
         [DataMember(Order = 10)] public float? contactDamage, contactStun;
+        [DataMember(Order = 11)] public StreetActorKind actorKind;
     }
 
     [Serializable, DataContract]
@@ -189,7 +190,7 @@ namespace TingLu.Levels
                     id = item.Id, kind = item.Kind, position = StreetPointData.From(item.Position), materialId = item.MaterialId,
                     solid = item.Solid, vehicleHazard = item.VehicleHazard, blocksProbe = item.BlocksProbe,
                     acousticLoss = item.AcousticLoss, height = item.Height, soundId = item.SoundId, soundActive = item.SoundActive,
-                    semantic = item.Semantic, contactDamage = item.ContactDamage, contactStun = item.ContactStun
+                    semantic = item.Semantic, contactDamage = item.ContactDamage, contactStun = item.ContactStun, actorKind = item.ActorKind
                 };
                 foreach (Point2 point in item.Polygon) data.polygon.Add(StreetPointData.From(point));
                 result.objects.Add(data);
@@ -292,7 +293,7 @@ namespace TingLu.Levels
         }
 
         private static StreetSurface ToSurface(StreetSurfaceData source) { var p = Points(source.polygon); return new StreetSurface(source.id, source.materialId, p, source.priority, source.textureAxis.ToPoint(), source.heightBase, source.heightSlopeX, source.heightSlopeY); }
-        private static StreetObject ToObject(StreetObjectData source) { return new StreetObject(source.id, source.kind, source.position.ToPoint(), Points(source.polygon), source.materialId, source.solid, source.vehicleHazard, source.blocksProbe, source.acousticLoss, source.height, source.soundId, source.soundActive, source.semantic, source.contactDamage, source.contactStun); }
+        private static StreetObject ToObject(StreetObjectData source) { return new StreetObject(source.id, source.kind, source.position.ToPoint(), Points(source.polygon), source.materialId, source.solid, source.vehicleHazard, source.blocksProbe, source.acousticLoss, source.height, source.soundId, source.soundActive, source.semantic, source.contactDamage, source.contactStun, source.actorKind); }
         private static StreetRoute ToRoute(StreetRouteData source) { var points = Points(source.points); return new StreetRoute(source.objectId, points, source.speed, source.signalAxis, source.offset, source.loop, source.stopLineDistance); }
         private static Point2[] Points(List<StreetPointData> source) { var result = new Point2[source.Count]; for (int i = 0; i < result.Length; i++) result[i] = source[i].ToPoint(); return result; }
 
@@ -306,7 +307,7 @@ namespace TingLu.Levels
         private static void ValidateObject(StreetObjectData value, List<string> errors, HashSet<string> ids)
         {
             if (value == null) { errors.Add("存在空 object。"); return; } RequireId(errors, value.id, "object"); AddId(errors, ids, value.id, "object"); RequireId(errors, value.materialId, "object materialId"); ValidatePoint(value.position, errors, value.id + ".position");
-            if (!Enum.IsDefined(typeof(StreetKind), value.kind) || !Enum.IsDefined(typeof(PerceptionSemantic), value.semantic)) errors.Add(value.id + "：对象类别无效。");
+            if (!Enum.IsDefined(typeof(StreetKind), value.kind) || !Enum.IsDefined(typeof(PerceptionSemantic), value.semantic) || !Enum.IsDefined(typeof(StreetActorKind), value.actorKind)) errors.Add(value.id + "：对象类别无效。");
             if (Array.IndexOf(StreetCatalog.Materials, value.materialId) < 0) errors.Add(value.id + "：对象材质无效。");
             if (!string.IsNullOrEmpty(value.soundId) && Array.IndexOf(StreetCatalog.Sounds, value.soundId) < 0) errors.Add(value.id + "：声音无效，请从列表选择。");
             if (value.soundId == "street.signal.ns" || value.soundId == "street.signal.ew")
